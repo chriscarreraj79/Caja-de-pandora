@@ -40,6 +40,11 @@
   .parts-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; }
   .part-badge { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 0.35rem 0.9rem; font-size: 0.8rem; }
   input[type="text"] { width: 100%; padding: 0.85rem 1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); color: white; font-size: 1rem; font-family: inherit; outline: none; margin-bottom: 1.5rem; }
+  .mode-select { display: flex; gap: 0.6rem; margin-bottom: 1.5rem; text-align: left; flex-wrap: wrap; }
+  .mode-option { flex: 1; min-width: 200px; display: flex; gap: 0.6rem; align-items: flex-start; cursor: pointer; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 0.75rem 0.9rem; font-size: 0.85rem; line-height: 1.4; }
+  .mode-option:has(input:checked) { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.7); }
+  .mode-option input { margin-top: 0.2rem; accent-color: white; }
+  .mode-option small { display: block; opacity: 0.75; font-size: 0.78rem; }
   input[type="text"]::placeholder { color: rgba(255,255,255,0.5); }
   input[type="text"]:focus { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.18); }
   .btn { display: inline-block; padding: 0.85rem 2rem; border-radius: 10px; font-size: 1rem; font-family: inherit; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
@@ -212,10 +217,14 @@
     <p class="subtitle">Descubre tu camino académico y profesional</p>
     <div class="parts-badges">
       <span class="part-badge">Parte 1: Temperamento (40 ítems)</span>
-      <span class="part-badge">Parte 2: Preferencias Vocacionales (300 ítems)</span>
+      <span class="part-badge">Parte 2: Preferencias Vocacionales (<span id="badge-p2-count">580</span> ítems)</span>
       <span class="part-badge">Parte 3: Estilo VAK (18 ítems)</span>
     </div>
     <p class="desc">Este test integra tres dimensiones para darte un perfil vocacional completo. Responde con sinceridad; no hay respuestas correctas ni incorrectas. Tu avance se guarda automáticamente para que puedas retomarlo si cierras el navegador. Al finalizar, recibirás un enlace compartible con tus resultados.</p>
+    <div class="mode-select">
+      <label class="mode-option"><input type="radio" name="test-mode" value="completa" checked onchange="updateWelcomeCounts()"><span><strong>Versión completa</strong><small>10 actividades por carrera · <span id="mode-count-completa">638</span> ítems en total</small></span></label>
+      <label class="mode-option"><input type="radio" name="test-mode" value="breve" onchange="updateWelcomeCounts()"><span><strong>Versión breve</strong><small>5 actividades por carrera · <span id="mode-count-breve">348</span> ítems en total</small></span></label>
+    </div>
     <input type="text" id="username-input" placeholder="Escribe tu nombre completo..." maxlength="60">
     <br>
     <button class="btn btn-primary" onclick="startTest()">Comenzar test &rarr;</button>
@@ -256,7 +265,7 @@
   <div class="trans-card" style="margin:auto; margin-top:15vh;">
     <div class="trans-icon">&#127775;</div>
     <h2>¡Excelente avance!</h2>
-    <p>Has completado el Perfil de Temperamento. Ahora explorarás tus preferencias vocacionales con 300 actividades concretas de diferentes carreras.</p>
+    <p>Has completado el Perfil de Temperamento. Ahora explorarás tus preferencias vocacionales con <span id="trans12-p2-count">580</span> actividades concretas de <span id="trans12-careers">58</span> carreras.</p>
     <button class="btn btn-success" onclick="startP2()">Continuar a Parte 2 &rarr;</button>
   </div>
 </div>
@@ -287,7 +296,7 @@
   <div class="trans-card" style="margin:auto; margin-top:15vh;">
     <div class="trans-icon">&#127919;</div>
     <h2>¡Casi terminamos!</h2>
-    <p>¡Increíble! Has respondido 340 ítems. Solo quedan 18 preguntas sobre tu estilo de aprendizaje.</p>
+    <p>¡Increíble! Has respondido <span id="trans23-answered">620</span> ítems. Solo quedan 18 preguntas sobre tu estilo de aprendizaje.</p>
     <button class="btn" style="background:var(--p3);color:#1a1a1a;" onclick="startP3()">Continuar a Parte 3 &rarr;</button>
   </div>
 </div>
@@ -981,7 +990,7 @@ const CAREERS = {
     "Disfrutaría evaluar la viabilidad financiera de proyectos de inversión.",
     "Me atraería trabajar en organismos como el Banco Mundial o el BID en proyectos de desarrollo.",
   ],
-  "Marketing y Publicidad": [
+  "Marketing": [
     "Me atraería diseñar campañas publicitarias creativas para posicionar marcas en el mercado.",
     "Disfruto analizar el comportamiento del consumidor y sus motivaciones de compra.",
     "Me gustaría gestionar redes sociales y crear contenido digital para marcas.",
@@ -1440,10 +1449,14 @@ let state = {
   p2Idx: 0,
   p3Answers: new Array(18).fill(null),
   p3Idx: 0,
-  phase: "welcome"
+  phase: "welcome",
+  mode: "completa"
 };
 
-const TOTAL_ITEMS = 358;
+// Total de ítems según la versión elegida (completa: 10 por carrera, breve: 5)
+function p2PerCareer() { return state.mode === "breve" ? 5 : 10; }
+function p2ItemCount() { return P2_BLOCKS.length * p2PerCareer(); }
+function totalItems() { return 40 + p2ItemCount() + 18; }
 
 function saveState() { try { localStorage.setItem("tov_state", JSON.stringify(state)); } catch(e){} }
 function loadState() {
@@ -1458,10 +1471,11 @@ function loadState() {
 // INIT
 // ============================================================
 window.addEventListener("DOMContentLoaded", () => {
+  updateWelcomeCounts();
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get("r")) {
     try {
-      state = JSON.parse(atob(urlParams.get("r")));
+      state = decodeResults(urlParams.get("r"));
       showScreen("report-screen");
       renderReport();
       return;
@@ -1471,6 +1485,20 @@ window.addEventListener("DOMContentLoaded", () => {
     resumeFromState();
   }
 });
+
+// Actualiza los conteos visibles según la versión seleccionada / en curso
+function updateWelcomeCounts() {
+  const sel = document.querySelector('input[name="test-mode"]:checked');
+  const per = sel && sel.value === "breve" ? 5 : 10;
+  document.getElementById("badge-p2-count").textContent = P2_BLOCKS.length * per;
+  document.getElementById("mode-count-completa").textContent = 40 + P2_BLOCKS.length * 10 + 18;
+  document.getElementById("mode-count-breve").textContent = 40 + P2_BLOCKS.length * 5 + 18;
+}
+function updateTransitionCounts() {
+  document.getElementById("trans12-p2-count").textContent = p2ItemCount();
+  document.getElementById("trans12-careers").textContent = P2_BLOCKS.length;
+  document.getElementById("trans23-answered").textContent = 40 + p2ItemCount();
+}
 
 function resumeFromState() {
   document.getElementById("global-progress").style.display = "flex";
@@ -1487,6 +1515,8 @@ function startTest() {
   const name = document.getElementById("username-input").value.trim();
   if (!name) { showToast("Por favor escribe tu nombre para comenzar."); return; }
   state.name = name;
+  const modeInput = document.querySelector('input[name="test-mode"]:checked');
+  state.mode = modeInput ? modeInput.value : "completa";
   state.phase = "p1";
   saveState();
   document.getElementById("global-progress").style.display = "flex";
@@ -1499,6 +1529,7 @@ function startTest() {
 // SCREENS
 // ============================================================
 function showScreen(id) {
+  updateTransitionCounts();
   document.querySelectorAll(".screen").forEach(s => { s.classList.remove("active"); s.style.display = "none"; });
   const el = document.getElementById(id);
   el.style.display = "";
@@ -1574,12 +1605,19 @@ function p1Next() {
 // ============================================================
 const P2_ITEMS = [];
 const P2_CAREER_MAP = [];
+const P2_BLOCKS = []; // un bloque por carrera: { career, idxs: [índices globales en P2_ITEMS] }
 Object.entries(CAREERS).forEach(([career, items]) => {
+  const idxs = [];
   items.forEach(text => {
+    idxs.push(P2_ITEMS.length);
     P2_CAREER_MAP.push(career);
     P2_ITEMS.push(text);
   });
+  P2_BLOCKS.push({ career, idxs });
 });
+// Índices activos de un bloque según la versión (la breve usa las primeras 5 actividades)
+function p2ActiveIdxs(blockIdx) { return P2_BLOCKS[blockIdx].idxs.slice(0, p2PerCareer()); }
+function p2AllActiveIdxs() { return P2_BLOCKS.flatMap((_, b) => p2ActiveIdxs(b)); }
 
 const LIKERT_LABELS = ["No me interesa nada","Me interesa poco","Me es indiferente","Me interesa","Me apasiona"];
 
@@ -1593,24 +1631,21 @@ function startP2() {
 }
 
 function renderP2() {
-  const blockSize = 10;
-  const totalBlocks = Math.ceil(P2_ITEMS.length / blockSize);
+  const totalBlocks = P2_BLOCKS.length;
   const blockIdx = state.p2Idx;
-  const start = blockIdx * blockSize;
-  const end = Math.min(start + blockSize, P2_ITEMS.length);
-  const items = P2_ITEMS.slice(start, end);
+  const idxs = p2ActiveIdxs(blockIdx);
+  const per = p2PerCareer();
 
   document.getElementById("p2-prog-text").textContent = `Bloque ${blockIdx+1} de ${totalBlocks}`;
   document.getElementById("p2-fill").style.width = `${((blockIdx+1)/totalBlocks)*100}%`;
 
-  const career = P2_CAREER_MAP[start];
-  document.getElementById("p2-block-label").textContent = `Área: ${career}`;
+  document.getElementById("p2-block-label").textContent = `Área: ${P2_BLOCKS[blockIdx].career}`;
 
   let html = "";
-  items.forEach((text, li) => {
-    const globalIdx = start + li;
+  idxs.forEach((globalIdx, li) => {
+    const text = P2_ITEMS[globalIdx];
     const val = state.p2Answers[globalIdx] || 0;
-    html += `<div class="likert-card"><p class="likert-text"><strong>${globalIdx+1}.</strong> ${text}</p>
+    html += `<div class="likert-card"><p class="likert-text"><strong>${blockIdx*per + li + 1}.</strong> ${text}</p>
     <div class="likert-scale">`;
     for (let v = 1; v <= 5; v++) {
       const chk = val === v ? "checked" : "";
@@ -1633,13 +1668,8 @@ function p2Prev() {
 }
 
 function p2Next() {
-  const blockSize = 10;
-  const start = state.p2Idx * blockSize;
-  const end = Math.min(start + blockSize, P2_ITEMS.length);
-  for (let i = start; i < end; i++) {
-    if (!state.p2Answers[i]) { showToast("Por favor califica todos los ítems del bloque."); return; }
-  }
-  const totalBlocks = Math.ceil(P2_ITEMS.length / blockSize);
+  if (p2ActiveIdxs(state.p2Idx).some(i => !state.p2Answers[i])) { showToast("Por favor califica todos los ítems del bloque."); return; }
+  const totalBlocks = P2_BLOCKS.length;
   if (state.p2Idx < totalBlocks-1) { state.p2Idx++; saveState(); renderP2(); }
   else {
     state.phase = "trans23"; saveState(); showScreen("trans-23"); updateGlobalProgress();
@@ -1718,10 +1748,10 @@ function calcP1() {
 function calcP2() {
   const totals = {};
   const maxes = {};
-  Object.entries(CAREERS).forEach(([c, items]) => { totals[c] = 0; maxes[c] = items.length * 5; });
-  P2_ITEMS.forEach((_, i) => {
-    const career = P2_CAREER_MAP[i];
-    totals[career] = (totals[career]||0) + (state.p2Answers[i]||0);
+  P2_BLOCKS.forEach(({ career }, b) => {
+    const idxs = p2ActiveIdxs(b);
+    maxes[career] = idxs.length * 5;
+    totals[career] = idxs.reduce((sum, i) => sum + (state.p2Answers[i] || 0), 0);
   });
   const pcts = {};
   Object.keys(totals).forEach(c => pcts[c] = Math.round((totals[c]/maxes[c])*100));
@@ -1807,9 +1837,7 @@ function renderReport() {
   document.getElementById("triang-text").innerHTML = generateTriangulation(p1, p2, p3);
 
   // SHARE LINK
-  const encoded = btoa(JSON.stringify(state));
-  const url = `${window.location.origin}${window.location.pathname}?r=${encoded}`;
-  document.getElementById("url-display").textContent = url;
+  document.getElementById("url-display").textContent = buildShareUrl();
 }
 
 function generateTriangulation(p1, p2, p3) {
@@ -1848,9 +1876,9 @@ function updateGlobalProgress() {
   let answered = 0;
   state.p1A.forEach(v => { if(v!==null) answered++; });
   state.p1B.forEach(v => { if(v!==null) answered++; });
-  Object.keys(state.p2Answers).forEach(k => { if(state.p2Answers[k]) answered++; });
+  p2AllActiveIdxs().forEach(i => { if(state.p2Answers[i]) answered++; });
   state.p3Answers.forEach(v => { if(v!==null) answered++; });
-  const pct = Math.min(100, Math.round((answered/TOTAL_ITEMS)*100));
+  const pct = Math.min(100, Math.round((answered/totalItems())*100));
   document.getElementById("gp-bar").style.width = pct+"%";
   document.getElementById("gp-pct").textContent = pct+"%";
 }
@@ -1858,11 +1886,70 @@ function updateGlobalProgress() {
 // ============================================================
 // UTILITIES
 // ============================================================
+// Base64 apto para URL y seguro con tildes/ñ (btoa solo acepta Latin-1)
+function b64urlEncode(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function b64urlDecode(s) {
+  s = s.replace(/-/g, "+").replace(/_/g, "/");
+  while (s.length % 4) s += "=";
+  const bin = atob(s);
+  return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+}
+
+// Formato compacto: las respuestas van como cadenas de dígitos en vez del estado completo
+function encodeResults() {
+  const digits = arr => arr.map(v => v === null ? "-" : v).join("");
+  return b64urlEncode(JSON.stringify({
+    v: 2,
+    n: state.name,
+    d: state.date,
+    m: state.mode,
+    a: digits(state.p1A),
+    b: digits(state.p1B),
+    c: p2AllActiveIdxs().map(i => state.p2Answers[i] || 0).join(""),
+    e: digits(state.p3Answers)
+  }));
+}
+function decodeResults(param) {
+  let data;
+  try { data = JSON.parse(b64urlDecode(param)); } catch(e) { data = null; }
+  if (!data || data.v !== 2) {
+    // Enlaces generados por la versión anterior (estado completo con btoa)
+    const legacy = JSON.parse(atob(param));
+    legacy.mode = "completa";
+    return legacy;
+  }
+  const parse = str => str.split("").map(ch => ch === "-" ? null : Number(ch));
+  const mode = data.m === "breve" ? "breve" : "completa";
+  const per = mode === "breve" ? 5 : 10;
+  const idxs = P2_BLOCKS.flatMap(b => b.idxs.slice(0, per));
+  const p2Answers = {};
+  data.c.split("").forEach((ch, k) => { if (idxs[k] !== undefined && ch !== "0") p2Answers[idxs[k]] = Number(ch); });
+  return {
+    name: data.n || "", date: data.d || "", mode,
+    p1A: parse(data.a), p1B: parse(data.b), p1Idx: 39,
+    p2Answers, p2Idx: P2_BLOCKS.length - 1,
+    p3Answers: parse(data.e), p3Idx: 17, phase: "report"
+  };
+}
+function buildShareUrl() {
+  return `${window.location.origin}${window.location.pathname}?r=${encodeResults()}`;
+}
+
 function copyLink() {
-  const encoded = btoa(JSON.stringify(state));
-  const url = `${window.location.origin}${window.location.pathname}?r=${encoded}`;
+  const url = buildShareUrl();
   navigator.clipboard.writeText(url).then(() => showToast("¡Enlace copiado al portapapeles!")).catch(() => {
-    document.getElementById("url-display").select();
+    // url-display es un <div>: se selecciona su texto con un Range
+    const el = document.getElementById("url-display");
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
     showToast("Copia el enlace manualmente.");
   });
 }
@@ -1879,7 +1966,7 @@ function closeModal() { document.getElementById("modal").classList.remove("open"
 function doReset() {
   closeModal();
   localStorage.removeItem("tov_state");
-  state = { name:"", date:new Date().toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"}), p1A:new Array(20).fill(null), p1B:new Array(20).fill(null), p1Idx:0, p2Answers:{}, p2Idx:0, p3Answers:new Array(18).fill(null), p3Idx:0, phase:"welcome" };
+  state = { name:"", date:new Date().toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"}), p1A:new Array(20).fill(null), p1B:new Array(20).fill(null), p1Idx:0, p2Answers:{}, p2Idx:0, p3Answers:new Array(18).fill(null), p3Idx:0, phase:"welcome", mode:"completa" };
   p1Shuffled = []; p3Shuffled = [];
   document.getElementById("global-progress").style.display = "none";
   document.getElementById("username-input").value = "";
