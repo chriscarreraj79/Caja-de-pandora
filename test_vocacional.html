@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test de Orientación Vocacional</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
+  :root {
+    --p1: #2563eb; --p1l: #dbeafe; --p1d: #1e40af;
+    --p2: #059669; --p2l: #d1fae5; --p2d: #065f46;
+    --p3: #d97706; --p3l: #fef3c7; --p3d: #92400e;
+    --pr: #4f46e5; --prl: #eef2ff;
+    --cd: #2563eb; --cdl: #dbeafe;
+    --ci: #059669; --cil: #d1fae5;
+    --li: #d97706; --lil: #fef3c7;
+    --ld: #e11d48; --ldl: #ffe4e6;
+    --bg: #f8f7f4;
+    --white: #ffffff;
+    --text: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+  h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; line-height: 1.3; }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: block; }
+
+  /* WELCOME */
+  #welcome-screen { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 40%, #2563eb 100%); color: white; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+  #welcome-screen.active { display: flex; }
+  .welcome-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 3rem 2.5rem; max-width: 560px; width: 100%; text-align: center; }
+  .welcome-card h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 0.5rem; color: white; }
+  .welcome-card .subtitle { font-size: 1rem; opacity: 0.8; margin-bottom: 2rem; }
+  .welcome-card .desc { font-size: 0.9rem; opacity: 0.75; line-height: 1.7; margin-bottom: 2rem; text-align: left; }
+  .parts-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; }
+  .part-badge { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 0.35rem 0.9rem; font-size: 0.8rem; }
+  input[type="text"] { width: 100%; padding: 0.85rem 1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); color: white; font-size: 1rem; font-family: inherit; outline: none; margin-bottom: 1.5rem; }
+  input[type="text"]::placeholder { color: rgba(255,255,255,0.5); }
+  input[type="text"]:focus { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.18); }
+  .btn { display: inline-block; padding: 0.85rem 2rem; border-radius: 10px; font-size: 1rem; font-family: inherit; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
+  .btn-primary { background: white; color: #1e3a8a; }
+  .btn-primary:hover { background: #f0f9ff; transform: translateY(-1px); }
+  .btn-outline { background: transparent; color: white; border: 1.5px solid rgba(255,255,255,0.5); }
+  .btn-outline:hover { background: rgba(255,255,255,0.1); }
+  .btn-success { background: var(--p2); color: white; }
+  .btn-success:hover { background: var(--p2d); }
+
+  /* GLOBAL PROGRESS */
+  .global-progress { position: sticky; top: 0; z-index: 100; background: white; border-bottom: 1px solid var(--border); padding: 0.6rem 1.5rem; display: flex; align-items: center; gap: 1rem; }
+  .gp-label { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+  .gp-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .gp-bar { height: 100%; background: linear-gradient(90deg, var(--p1), var(--p2)); border-radius: 3px; transition: width 0.4s ease; }
+  .gp-pct { font-size: 0.8rem; font-weight: 500; color: var(--text); min-width: 36px; text-align: right; }
+
+  /* QUESTION CONTAINER */
+  .q-container { max-width: 720px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+  .part-header { text-align: center; margin-bottom: 2.5rem; padding: 2rem; border-radius: var(--radius); }
+  .part-header.p1 { background: var(--p1l); border-left: 4px solid var(--p1); }
+  .part-header.p2 { background: var(--p2l); border-left: 4px solid var(--p2); }
+  .part-header.p3 { background: var(--p3l); border-left: 4px solid var(--p3); }
+  .part-tag { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.7; margin-bottom: 0.5rem; }
+  .part-header h2 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+  .part-sub { font-size: 0.9rem; color: var(--muted); }
+
+  .block-title { font-size: 0.85rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+  .q-inner-progress { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.82rem; color: var(--muted); }
+  .q-inner-bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .q-inner-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+  .p1 .q-inner-fill { background: var(--p1); }
+  .p2 .q-inner-fill { background: var(--p2); }
+  .p3 .q-inner-fill { background: var(--p3); }
+
+  .question-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .q-text { font-size: 1rem; font-weight: 500; margin-bottom: 1.25rem; line-height: 1.5; }
+  .q-num { display: inline-block; background: var(--border); color: var(--muted); border-radius: 6px; padding: 0.15rem 0.5rem; font-size: 0.75rem; margin-bottom: 0.75rem; }
+
+  .options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.85rem 1rem; border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.15s; font-size: 0.92rem; background: white; }
+  .option:hover { border-color: var(--p1); background: #f0f9ff; }
+  .option.selected { border-color: var(--p1); background: var(--p1l); }
+  .option.selected .opt-letter { background: var(--p1); color: white; }
+  .opt-letter { min-width: 26px; height: 26px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: var(--muted); flex-shrink: 0; margin-top: 1px; transition: all 0.15s; }
+
+  /* LIKERT */
+  .likert-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 0.75rem; box-shadow: 0 1px 4px rgba(0,0,0,0.05); animation: fadeIn 0.2s ease; }
+  .likert-text { font-size: 0.9rem; margin-bottom: 0.9rem; line-height: 1.5; }
+  .likert-scale { display: flex; gap: 0.35rem; align-items: center; }
+  .likert-scale label { flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+  .likert-scale label span.lval { display: block; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 500; transition: all 0.15s; margin-bottom: 4px; }
+  .likert-scale label span.llabel { font-size: 0.65rem; color: var(--muted); text-align: center; line-height: 1.2; }
+  .likert-scale input[type="radio"] { display: none; }
+  .likert-scale input:checked + span.lval { background: var(--p2); border-color: var(--p2); color: white; }
+  .likert-scale label:hover span.lval { border-color: var(--p2); color: var(--p2); }
+  .likert-block-label { font-size: 0.75rem; font-weight: 500; color: var(--p2); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 0.75rem; padding-left: 0.25rem; }
+
+  /* NAVIGATION */
+  .nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+  .nav-btns .btn { padding: 0.75rem 1.5rem; font-size: 0.9rem; }
+  .btn-prev { background: white; color: var(--muted); border: 1px solid var(--border); }
+  .btn-prev:hover { border-color: var(--muted); color: var(--text); }
+  .btn-next { background: var(--p1); color: white; }
+  .btn-next.p2 { background: var(--p2); }
+  .btn-next.p3 { background: var(--p3); color: #1a1a1a; }
+  .btn-next:hover { opacity: 0.9; }
+  .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* TRANSITION SCREEN */
+  #transition-screen { background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 2rem; }
+  #transition-screen.active { display: flex; }
+  .trans-card { text-align: center; max-width: 420px; padding: 3rem 2rem; background: white; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+  .trans-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .trans-card h2 { margin-bottom: 0.75rem; }
+  .trans-card p { color: var(--muted); margin-bottom: 1.5rem; }
+  .progress-ring { margin: 1rem auto; width: 80px; height: 80px; position: relative; }
+  .progress-ring svg { transform: rotate(-90deg); }
+  .progress-ring .track { fill: none; stroke: var(--border); stroke-width: 6; }
+  .progress-ring .fill { fill: none; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 1s ease; }
+
+  /* REPORT */
+  #report-screen { background: var(--bg); }
+  #report-screen.active { display: block; }
+  .report-wrap { max-width: 860px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+  .report-header { text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, var(--pr) 0%, #6366f1 100%); border-radius: 20px; color: white; margin-bottom: 2rem; }
+  .report-header h1 { font-size: clamp(1.6rem, 3.5vw, 2.2rem); color: white; margin-bottom: 0.5rem; }
+  .report-header .rh-sub { opacity: 0.85; font-size: 1rem; }
+  .report-section { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 1.5rem; box-shadow: var(--shadow); }
+  .report-section h3 { font-size: 1.2rem; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--prl); color: var(--pr); }
+  .quad-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
+  .quad-card { padding: 1rem; border-radius: 10px; }
+  .quad-card.cd { background: var(--cdl); border: 1.5px solid var(--cd); }
+  .quad-card.ci { background: var(--cil); border: 1.5px solid var(--ci); }
+  .quad-card.li { background: var(--lil); border: 1.5px solid var(--li); }
+  .quad-card.ld { background: var(--ldl); border: 1.5px solid var(--ld); }
+  .quad-name { font-weight: 500; font-size: 0.9rem; margin-bottom: 0.3rem; }
+  .quad-pct { font-size: 1.6rem; font-weight: 600; }
+  .quad-bar-wrap { margin-top: 0.5rem; height: 6px; background: rgba(0,0,0,0.08); border-radius: 3px; }
+  .quad-bar { height: 100%; border-radius: 3px; }
+  .chart-container { margin: 1rem 0; }
+  .bar-chart { display: flex; flex-direction: column; gap: 0.6rem; }
+  .bc-row { display: flex; align-items: center; gap: 0.75rem; }
+  .bc-label { font-size: 0.82rem; min-width: 160px; text-align: right; color: var(--text); line-height: 1.3; }
+  .bc-bar-wrap { flex: 1; height: 22px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bc-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; min-width: 2px; transition: width 0.8s ease; }
+  .bc-val { font-size: 0.72rem; color: white; font-weight: 500; }
+  .top3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+  .top3-card { border-radius: 12px; padding: 1.25rem; text-align: center; border: 1.5px solid transparent; }
+  .top3-card:nth-child(1) { background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-color: var(--p2); }
+  .top3-card:nth-child(2) { background: linear-gradient(135deg, #dbeafe, #bfdbfe); border-color: var(--p1); }
+  .top3-card:nth-child(3) { background: linear-gradient(135deg, var(--p3l), #fde68a); border-color: var(--p3); }
+  .top3-rank { font-size: 1.5rem; font-weight: 700; opacity: 0.3; }
+  .top3-name { font-size: 1rem; font-weight: 500; margin: 0.3rem 0; }
+  .top3-pct { font-size: 1.4rem; font-weight: 600; }
+  .vak-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+  .vak-card { border-radius: 10px; padding: 1.25rem; text-align: center; }
+  .vak-card.v { background: #dbeafe; border: 1.5px solid var(--p1); }
+  .vak-card.a { background: var(--cil); border: 1.5px solid var(--ci); }
+  .vak-card.k { background: var(--p3l); border: 1.5px solid var(--p3); }
+  .vak-name { font-weight: 500; font-size: 0.9rem; }
+  .vak-pct { font-size: 1.8rem; font-weight: 600; }
+  .triang-text { font-size: 0.95rem; line-height: 1.8; color: var(--text); background: var(--prl); border-radius: 10px; padding: 1.25rem 1.5rem; border-left: 3px solid var(--pr); }
+  .share-box { background: var(--prl); border-radius: 12px; padding: 1.25rem; text-align: center; }
+  .share-box p { font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; }
+  .url-display { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.75rem; color: var(--muted); word-break: break-all; margin-bottom: 0.75rem; font-family: monospace; }
+  .report-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .dominant-chip { display: inline-block; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; margin-left: 0.5rem; }
+  .desc-block { font-size: 0.9rem; line-height: 1.7; color: var(--muted); margin-top: 0.75rem; }
+  .strat-list { margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .strat-item { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.88rem; }
+  .strat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pr); flex-shrink: 0; margin-top: 6px; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 16px; padding: 2rem; max-width: 440px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .modal h3 { margin-bottom: 0.75rem; }
+  .modal p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .modal-btns { display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: #1a1a1a; color: white; padding: 0.75rem 1.5rem; border-radius: 30px; font-size: 0.9rem; z-index: 300; transition: transform 0.3s; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 480px) {
+    .quad-grid { grid-template-columns: 1fr; }
+    .vak-grid { grid-template-columns: repeat(2, 1fr); }
+    .bc-label { min-width: 100px; font-size: 0.75rem; }
+    .welcome-card { padding: 2rem 1.25rem; }
+    .likert-scale label span.lval { width: 30px; height: 30px; font-size: 0.75rem; }
+    .likert-scale label span.llabel { font-size: 0.6rem; }
+  }
+
+  @media print {
+    .global-progress, .nav-btns, .report-actions, .share-box, .btn { display: none !important; }
+    .report-section { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+    body { background: white; }
+    #report-screen { background: white; }
+  }
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div id="welcome-screen" class="screen active">
+  <div class="welcome-card">
+    <h1>Test de Orientación Vocacional</h1>
+    <p class="subtitle">Descubre tu camino académico y profesional</p>
+    <div class="parts-badges">
+      <span class="part-badge">Parte 1: Temperamento (40 ítems)</span>
+      <span class="part-badge">Parte 2: Preferencias Vocacionales (300 ítems)</span>
+      <span class="part-badge">Parte 3: Estilo VAK (18 ítems)</span>
+    </div>
+    <p class="desc">Este test integra tres dimensiones para darte un perfil vocacional completo. Responde con sinceridad; no hay respuestas correctas ni incorrectas. Tu avance se guarda automáticamente para que puedas retomarlo si cierras el navegador. Al finalizar, recibirás un enlace compartible con tus resultados.</p>
+    <input type="text" id="username-input" placeholder="Escribe tu nombre completo..." maxlength="60">
+    <br>
+    <button class="btn btn-primary" onclick="startTest()">Comenzar test &rarr;</button>
+  </div>
+</div>
+
+<!-- GLOBAL PROGRESS BAR -->
+<div class="global-progress" id="global-progress" style="display:none;">
+  <span class="gp-label">Progreso total</span>
+  <div class="gp-bar-wrap"><div class="gp-bar" id="gp-bar" style="width:0%"></div></div>
+  <span class="gp-pct" id="gp-pct">0%</span>
+  <button class="btn btn-outline" style="padding:0.3rem 0.8rem;font-size:0.75rem;border-color:var(--border);color:var(--muted);margin-left:0.5rem;" onclick="confirmReset()">Reiniciar</button>
+</div>
+
+<!-- PART 1 -->
+<div id="p1-screen" class="screen">
+  <div class="q-container">
+    <div class="part-header p1">
+      <div class="part-tag">Parte 1</div>
+      <h2>Perfil de Temperamento</h2>
+      <p class="part-sub">Modelo de cuatro cuadrantes de dominancia cerebral</p>
+    </div>
+    <div id="p1-block-label" class="block-title"></div>
+    <div class="q-inner-progress p1">
+      <span id="p1-prog-text">Pregunta 1 de 40</span>
+      <div class="q-inner-bar"><div class="q-inner-fill" id="p1-fill" style="width:0%"></div></div>
+    </div>
+    <div id="p1-question-area"></div>
+    <div class="nav-btns">
+      <button class="btn btn-prev" onclick="p1Prev()">&#8592; Anterior</button>
+      <button class="btn btn-next" id="p1-next-btn" onclick="p1Next()">Siguiente &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSITION 1→2 -->
+<div id="trans-12" class="screen" style="display:none;">
+  <div class="trans-card" style="margin:auto; margin-top:15vh;">
+    <div class="trans-icon">&#127775;</div>
+    <h2>¡Excelente avance!</h2>
+    <p>Has completado el Perfil de Temperamento. Ahora explorarás tus preferencias vocacionales con 300 actividades concretas de diferentes carreras.</p>
+    <button class="btn btn-success" onclick="startP2()">Continuar a Parte 2 &rarr;</button>
+  </div>
+</div>
+
+<!-- PART 2 -->
+<div id="p2-screen" class="screen">
+  <div class="q-container">
+    <div class="part-header p2">
+      <div class="part-tag">Parte 2</div>
+      <h2>Preferencias Vocacionales</h2>
+      <p class="part-sub">Escala de interés del 1 al 5 por actividades de diferentes carreras</p>
+    </div>
+    <div id="p2-block-label" class="likert-block-label"></div>
+    <div class="q-inner-progress p2">
+      <span id="p2-prog-text">Bloque 1 de 30</span>
+      <div class="q-inner-bar"><div class="q-inner-fill" id="p2-fill" style="width:0%"></div></div>
+    </div>
+    <div id="p2-question-area"></div>
+    <div class="nav-btns">
+      <button class="btn btn-prev" onclick="p2Prev()">&#8592; Anterior</button>
+      <button class="btn btn-next p2" id="p2-next-btn" onclick="p2Next()">Siguiente &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSITION 2→3 -->
+<div id="trans-23" class="screen" style="display:none;">
+  <div class="trans-card" style="margin:auto; margin-top:15vh;">
+    <div class="trans-icon">&#127919;</div>
+    <h2>¡Casi terminamos!</h2>
+    <p>¡Increíble! Has respondido 340 ítems. Solo quedan 18 preguntas sobre tu estilo de aprendizaje.</p>
+    <button class="btn" style="background:var(--p3);color:#1a1a1a;" onclick="startP3()">Continuar a Parte 3 &rarr;</button>
+  </div>
+</div>
+
+<!-- PART 3 -->
+<div id="p3-screen" class="screen">
+  <div class="q-container">
+    <div class="part-header p3">
+      <div class="part-tag">Parte 3</div>
+      <h2>Estilo de Aprendizaje (VAK)</h2>
+      <p class="part-sub">¿Cómo prefieres aprender? Visual, Auditivo o Kinestésico</p>
+    </div>
+    <div class="q-inner-progress p3">
+      <span id="p3-prog-text">Pregunta 1 de 18</span>
+      <div class="q-inner-bar"><div class="q-inner-fill" id="p3-fill" style="width:0%"></div></div>
+    </div>
+    <div id="p3-question-area"></div>
+    <div class="nav-btns">
+      <button class="btn btn-prev" onclick="p3Prev()">&#8592; Anterior</button>
+      <button class="btn btn-next p3" id="p3-next-btn" onclick="p3Next()">Ver Resultados &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT -->
+<div id="report-screen" class="screen">
+  <div class="report-wrap">
+    <div class="report-header">
+      <h1>Reporte de Orientación Vocacional</h1>
+      <p class="rh-sub" id="rh-name-date"></p>
+    </div>
+
+    <div class="report-section">
+      <h3>1. Perfil de Temperamento</h3>
+      <div class="quad-grid" id="quad-grid-f"></div>
+      <p style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem;">Fortalezas (Bloque A)</p>
+      <div class="quad-grid" id="quad-grid-d" style="margin-top:1rem;"></div>
+      <p style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem;">Debilidades (Bloque B)</p>
+      <div id="quad-dominant-desc" class="desc-block" style="margin-top:1rem;"></div>
+    </div>
+
+    <div class="report-section">
+      <h3>2. Perfil Vocacional</h3>
+      <div class="top3" id="top3-cards"></div>
+      <div class="chart-container">
+        <div class="bar-chart" id="career-bar-chart"></div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>3. Estilo de Aprendizaje</h3>
+      <div class="vak-grid" id="vak-grid"></div>
+      <div id="vak-strategies" class="desc-block" style="margin-top:1rem;"></div>
+    </div>
+
+    <div class="report-section">
+      <h3>4. Análisis de Triangulación</h3>
+      <div class="triang-text" id="triang-text"></div>
+    </div>
+
+    <div class="report-section">
+      <h3>5. Compartir resultados</h3>
+      <div class="share-box">
+        <p>Comparte este enlace con tu orientador vocacional para que vea tus resultados completos.</p>
+        <div class="url-display" id="url-display">Generando enlace...</div>
+        <div class="report-actions">
+          <button class="btn btn-primary" onclick="copyLink()">Copiar enlace</button>
+          <button class="btn" style="background:var(--pr);color:white;" onclick="window.print()">Imprimir / PDF</button>
+          <button class="btn btn-outline" style="color:var(--text);border-color:var(--border);" onclick="confirmReset()">Nuevo test</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>&#9888; ¿Reiniciar el test?</h3>
+    <p>Se borrarán todas tus respuestas y tendrás que comenzar desde cero. Esta acción no se puede deshacer.</p>
+    <div class="modal-btns">
+      <button class="btn btn-prev" onclick="closeModal()">Cancelar</button>
+      <button class="btn" style="background:#dc2626;color:white;" onclick="doReset()">Sí, reiniciar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATA: PART 1 — TEMPERAMENT (40 items: 20 strengths + 20 weaknesses)
+// Quadrants: CD=Cortical Derecho, CI=Cortical Izquierdo, LI=Límbico Izquierdo, LD=Límbico Derecho
+// ============================================================
+const P1_STRENGTHS = [
+  { text: "Cuando enfrento un problema nuevo, lo que mejor me describe es:", opts: [
+    {t:"Analizo los datos disponibles y construyo una solución lógica y sistemática.",q:"CI"},
+    {t:"Me lanzo a explorar ideas creativas e innovadoras sin temor al riesgo.",q:"CD"},
+    {t:"Consulto con el equipo y busco construir un consenso antes de decidir.",q:"LD"},
+    {t:"Diseño un plan estructurado paso a paso y lo ejecuto con disciplina.",q:"LI"}
+  ]},
+  { text: "En el trabajo en equipo, mi mayor aporte suele ser:", opts: [
+    {t:"Aportar análisis técnico detallado y datos precisos.",q:"CI"},
+    {t:"Proponer visiones disruptivas y estrategias a largo plazo.",q:"CD"},
+    {t:"Motivar al grupo, escuchar y resolver conflictos con empatía.",q:"LD"},
+    {t:"Organizar las tareas, cumplir plazos y asegurar la calidad.",q:"LI"}
+  ]},
+  { text: "Lo que más disfruto hacer en mi tiempo libre es:", opts: [
+    {t:"Investigar temas complejos, leer libros técnicos o resolver acertijos.",q:"CI"},
+    {t:"Crear arte, inventar proyectos o imaginar nuevas posibilidades.",q:"CD"},
+    {t:"Pasar tiempo con amigos, conversar y compartir experiencias.",q:"LD"},
+    {t:"Practicar deportes, hacer manualidades o seguir una rutina establecida.",q:"LI"}
+  ]},
+  { text: "Cuando tomo decisiones importantes, mi proceso habitual es:", opts: [
+    {t:"Recopilo información, evalúo pros y contras con objetividad.",q:"CI"},
+    {t:"Me guío por mi intuición y visión del futuro.",q:"CD"},
+    {t:"Considero cómo afectará a las personas involucradas.",q:"LD"},
+    {t:"Sigo un proceso probado y me apego a los hechos concretos.",q:"LI"}
+  ]},
+  { text: "Mis amigos me describirían como alguien:", opts: [
+    {t:"Muy inteligente, preciso y analítico.",q:"CI"},
+    {t:"Original, visionario y lleno de ideas.",q:"CD"},
+    {t:"Cálido, empático y siempre disponible para los demás.",q:"LD"},
+    {t:"Confiable, organizado y responsable.",q:"LI"}
+  ]},
+  { text: "En un proyecto escolar o laboral, me destaco en:", opts: [
+    {t:"La investigación y el análisis profundo del tema.",q:"CI"},
+    {t:"La creatividad, el diseño y la presentación innovadora.",q:"CD"},
+    {t:"La colaboración y el trabajo armónico con los compañeros.",q:"LD"},
+    {t:"El seguimiento, la planificación y el cumplimiento de fechas.",q:"LI"}
+  ]},
+  { text: "Cuando aprendo algo nuevo, me va mejor cuando:", opts: [
+    {t:"Entiendo la teoría y la lógica detrás del concepto.",q:"CI"},
+    {t:"Puedo experimentar libremente y conectarlo con ideas creativas.",q:"CD"},
+    {t:"Aprendo en grupo y puedo compartir experiencias con otros.",q:"LD"},
+    {t:"Sigo un manual o tutorial paso a paso con ejemplos prácticos.",q:"LI"}
+  ]},
+  { text: "Una de mis grandes habilidades es:", opts: [
+    {t:"Detectar errores, inconsistencias o fallas lógicas rápidamente.",q:"CI"},
+    {t:"Ver el panorama completo y anticipar tendencias futuras.",q:"CD"},
+    {t:"Conectar emocionalmente con las personas y generar confianza.",q:"LD"},
+    {t:"Mantener la constancia y la disciplina en mis actividades.",q:"LI"}
+  ]},
+  { text: "En una discusión académica, prefiero:", opts: [
+    {t:"Presentar evidencia, cifras y argumentos bien fundamentados.",q:"CI"},
+    {t:"Proponer ideas novedosas que rompan los esquemas tradicionales.",q:"CD"},
+    {t:"Escuchar todas las posturas y encontrar puntos en común.",q:"LD"},
+    {t:"Defender posturas con base en procedimientos y normas establecidas.",q:"LI"}
+  ]},
+  { text: "Mi mayor fortaleza académica es:", opts: [
+    {t:"Razonamiento lógico-matemático y análisis de datos.",q:"CI"},
+    {t:"Pensamiento creativo, síntesis e imaginación.",q:"CD"},
+    {t:"Comunicación interpersonal y trabajo colaborativo.",q:"LD"},
+    {t:"Organización, gestión del tiempo y cumplimiento.",q:"LI"}
+  ]},
+  { text: "Cuando lidero un equipo, lo hago principalmente:", opts: [
+    {t:"Estableciendo metas claras basadas en datos y análisis.",q:"CI"},
+    {t:"Inspirando con una visión audaz y motivando la innovación.",q:"CD"},
+    {t:"Creando un ambiente de confianza y cohesión emocional.",q:"LD"},
+    {t:"Asignando roles claros y supervisando el cumplimiento del plan.",q:"LI"}
+  ]},
+  { text: "En una materia difícil, lo que me ayuda a superar el reto es:", opts: [
+    {t:"Profundizar hasta entender completamente la lógica del tema.",q:"CI"},
+    {t:"Buscar formas creativas y alternativas de abordar el problema.",q:"CD"},
+    {t:"Estudiar en grupo y apoyarme en los compañeros.",q:"LD"},
+    {t:"Crear un cronograma y seguir una rutina de estudio sistemática.",q:"LI"}
+  ]},
+  { text: "Cuando alguien me presenta un nuevo proyecto, lo primero que hago es:", opts: [
+    {t:"Analizar su viabilidad técnica y buscar posibles fallas.",q:"CI"},
+    {t:"Imaginar cómo mejorarlo y qué oportunidades ofrece.",q:"CD"},
+    {t:"Pensar en quiénes se beneficiarán y cómo impactará a las personas.",q:"LD"},
+    {t:"Evaluar los recursos necesarios y estimar tiempos realistas.",q:"LI"}
+  ]},
+  { text: "En el aula, suelo ser el estudiante que:", opts: [
+    {t:"Hace preguntas profundas y busca el sustento teórico de cada tema.",q:"CI"},
+    {t:"Propone conexiones inesperadas entre temas y nuevas formas de ver las cosas.",q:"CD"},
+    {t:"Apoya a sus compañeros y facilita un buen ambiente de clase.",q:"LD"},
+    {t:"Entrega todas las tareas a tiempo y tiene apuntes bien organizados.",q:"LI"}
+  ]},
+  { text: "Lo que más me da satisfacción al culminar un trabajo es:", opts: [
+    {t:"Saber que el resultado es técnicamente correcto y bien fundamentado.",q:"CI"},
+    {t:"Ver que el resultado es original e innovador.",q:"CD"},
+    {t:"Que el equipo se sienta bien y haya disfrutado el proceso.",q:"LD"},
+    {t:"Que se cumplieron todos los objetivos dentro del plazo previsto.",q:"LI"}
+  ]},
+  { text: "Cuando debo comunicar una idea, prefiero hacerlo mediante:", opts: [
+    {t:"Un informe detallado con gráficos, tablas y análisis.",q:"CI"},
+    {t:"Una presentación visual creativa con metáforas e historias.",q:"CD"},
+    {t:"Una conversación cercana donde puedo leer las reacciones de los demás.",q:"LD"},
+    {t:"Un esquema claro, con puntos numerados y pasos definidos.",q:"LI"}
+  ]},
+  { text: "Cuando observo una situación compleja, lo primero que noto es:", opts: [
+    {t:"Las relaciones lógicas entre sus partes y las posibles causas.",q:"CI"},
+    {t:"El potencial de cambio y las oportunidades ocultas.",q:"CD"},
+    {t:"Las emociones y necesidades de las personas involucradas.",q:"LD"},
+    {t:"Los procedimientos que se están siguiendo bien o mal.",q:"LI"}
+  ]},
+  { text: "En proyectos largos, mi fortaleza principal es:", opts: [
+    {t:"Mantener la rigurosidad y la consistencia en los resultados.",q:"CI"},
+    {t:"Generar energía y renovar la motivación del equipo con ideas frescas.",q:"CD"},
+    {t:"Sostener el vínculo emocional y la cohesión del grupo.",q:"LD"},
+    {t:"Garantizar que se cumplan todas las etapas y entregables.",q:"LI"}
+  ]},
+  { text: "Cuando alguien me plantea un desafío inesperado, reacciono:", opts: [
+    {t:"Con calma, buscando información antes de actuar.",q:"CI"},
+    {t:"Con entusiasmo, viendo el problema como una oportunidad.",q:"CD"},
+    {t:"Apoyándome en otros y buscando soluciones colectivas.",q:"LD"},
+    {t:"Aplicando protocolos y metodologías ya probadas.",q:"LI"}
+  ]},
+  { text: "Mi estilo natural de trabajo es:", opts: [
+    {t:"Independiente, concentrado y orientado a la precisión.",q:"CI"},
+    {t:"Flexible, intuitivo y orientado a la exploración.",q:"CD"},
+    {t:"Colaborativo, cálido y centrado en las relaciones.",q:"LD"},
+    {t:"Estructurado, metódico y orientado a los resultados concretos.",q:"LI"}
+  ]}
+];
+
+const P1_WEAKNESSES = [
+  { text: "Una debilidad que reconozco en mí es que a veces:", opts: [
+    {t:"Soy demasiado frío o distante emocionalmente con los demás.",q:"CI"},
+    {t:"Me pierdo en ideas y me cuesta concretar proyectos.",q:"CD"},
+    {t:"Soy dependiente de la aprobación de los demás para sentirme bien.",q:"LD"},
+    {t:"Soy inflexible y me cuesta adaptarme a cambios inesperados.",q:"LI"}
+  ]},
+  { text: "Cuando trabajo en equipo, lo que más me cuesta es:", opts: [
+    {t:"Mostrar mis emociones o conectar afectivamente con el grupo.",q:"CI"},
+    {t:"Seguir reglas rígidas o procedimientos estrictos.",q:"CD"},
+    {t:"Tomar decisiones difíciles que puedan disgustar a alguien.",q:"LD"},
+    {t:"Tolerar el caos, la improvisación o el desorden.",q:"LI"}
+  ]},
+  { text: "Reconozco que una de mis mayores dificultades es:", opts: [
+    {t:"Expresar mis sentimientos de forma abierta y espontánea.",q:"CI"},
+    {t:"Mantener el enfoque y terminar lo que empiezo.",q:"CD"},
+    {t:"Ponerme firme cuando alguien me pide algo que no quiero hacer.",q:"LD"},
+    {t:"Improvisar o adaptarme cuando el plan original falla.",q:"LI"}
+  ]},
+  { text: "En situaciones de estrés, tiendo a:", opts: [
+    {t:"Volverme hiperanálítico y paralizado por el exceso de datos.",q:"CI"},
+    {t:"Escapar hacia la fantasía o cambiar de proyecto en lugar de resolver.",q:"CD"},
+    {t:"Buscar el apoyo emocional de otros en lugar de actuar.",q:"LD"},
+    {t:"Ponerme rígido y resistirme a cualquier cambio en el plan.",q:"LI"}
+  ]},
+  { text: "Algo que me han señalado como área de mejora es:", opts: [
+    {t:"Ser más empático y considerado con los sentimientos de otros.",q:"CI"},
+    {t:"Ser más concreto, realista y menos soñador.",q:"CD"},
+    {t:"Ser más asertivo y menos complaciente.",q:"LD"},
+    {t:"Ser más flexible y abierto a nuevas formas de hacer las cosas.",q:"LI"}
+  ]},
+  { text: "En el trabajo, la situación que más me incomoda es:", opts: [
+    {t:"Cuando me piden actuar solo con base en intuición o emoción.",q:"CI"},
+    {t:"Cuando debo seguir una rutina repetitiva sin espacio para innovar.",q:"CD"},
+    {t:"Cuando hay conflictos y tengo que confrontar directamente a alguien.",q:"LD"},
+    {t:"Cuando cambian las reglas o los procedimientos sin previo aviso.",q:"LI"}
+  ]},
+  { text: "Una limitación que reconozco en mi forma de comunicarme es:", opts: [
+    {t:"Suelo ser demasiado técnico y las personas no me entienden fácilmente.",q:"CI"},
+    {t:"Hablo de muchas cosas a la vez y pierdo el hilo de la conversación.",q:"CD"},
+    {t:"Evito decir cosas que puedan herir a los demás aunque sea necesario.",q:"LD"},
+    {t:"Soy muy directo y a veces parezco inflexible o dogmático.",q:"LI"}
+  ]},
+  { text: "Cuando se trata de organizar mi tiempo, mi mayor debilidad es:", opts: [
+    {t:"Dedicar demasiado tiempo al análisis antes de actuar.",q:"CI"},
+    {t:"Empezar muchos proyectos y no terminar ninguno.",q:"CD"},
+    {t:"Dar prioridad a compromisos sociales sobre mis metas personales.",q:"LD"},
+    {t:"Ser tan rígido con mi agenda que no puedo adaptarme a lo inesperado.",q:"LI"}
+  ]},
+  { text: "Una actitud mía que a veces genera problemas es:", opts: [
+    {t:"Ser demasiado crítico con los errores propios y ajenos.",q:"CI"},
+    {t:"Ser impulsivo y lanzarme sin evaluar bien los riesgos.",q:"CD"},
+    {t:"Ceder demasiado fácilmente para evitar conflictos.",q:"LD"},
+    {t:"Resistirme a nuevas ideas que no encajen con lo que ya conozco.",q:"LI"}
+  ]},
+  { text: "En cuanto a mis relaciones interpersonales, reconozco que:", opts: [
+    {t:"A veces parezco distante o poco interesado en los sentimientos de otros.",q:"CI"},
+    {t:"Puedo ser muy voluble o inconsistente en mis compromisos.",q:"CD"},
+    {t:"Me cuesta manejar el rechazo o la crítica de las personas que quiero.",q:"LD"},
+    {t:"Puedo ser dominante o controlador en cuanto a cómo se hacen las cosas.",q:"LI"}
+  ]},
+  { text: "Lo que más me frena al momento de tomar decisiones es:", opts: [
+    {t:"La necesidad de tener más datos antes de actuar.",q:"CI"},
+    {t:"La dificultad para elegir entre muchas ideas apasionantes.",q:"CD"},
+    {t:"El miedo a que mi decisión afecte negativamente a alguien.",q:"LD"},
+    {t:"La resistencia a salirme del procedimiento establecido.",q:"LI"}
+  ]},
+  { text: "En proyectos grupales, un obstáculo que genero involuntariamente es:", opts: [
+    {t:"Deshumanizar el proceso al enfocarse solo en los resultados técnicos.",q:"CI"},
+    {t:"Desorganizar el equipo por querer cambiar el plan constantemente.",q:"CD"},
+    {t:"Ralentizar las decisiones al querer asegurar que todos estén de acuerdo.",q:"LD"},
+    {t:"Generar tensión al insistir en seguir el proceso aunque no funcione bien.",q:"LI"}
+  ]},
+  { text: "Cuando algo no sale como esperaba, mi reacción más común es:", opts: [
+    {t:"Analizar obsesivamente qué salió mal y por qué.",q:"CI"},
+    {t:"Perder el interés y ya no querer continuar con el proyecto.",q:"CD"},
+    {t:"Sentirme muy afectado emocionalmente o culpabilizarme en exceso.",q:"LD"},
+    {t:"Frustrarme intensamente si la falla se debió a un cambio no planificado.",q:"LI"}
+  ]},
+  { text: "Algo que me genera ansiedad o incomodidad frecuente es:", opts: [
+    {t:"Las situaciones ambiguas donde no hay una respuesta lógica clara.",q:"CI"},
+    {t:"Las rutinas repetitivas que no me dejan espacio para crear.",q:"CD"},
+    {t:"Los entornos de alta competencia o trabajo individual sin colaboración.",q:"LD"},
+    {t:"Los entornos caóticos donde no hay normas claras ni estructura.",q:"LI"}
+  ]},
+  { text: "En cuanto al manejo del tiempo, mi debilidad más evidente es:", opts: [
+    {t:"Tardar demasiado en cada tarea por querer hacerla perfecta.",q:"CI"},
+    {t:"Comenzar tarde porque me distrae el proceso creativo previo.",q:"CD"},
+    {t:"Invertir demasiado tiempo ayudando a otros y descuidar mis propias tareas.",q:"LD"},
+    {t:"Dedicar tiempo a tareas secundarias que estaban en el plan aunque ya no sean prioritarias.",q:"LI"}
+  ]},
+  { text: "Ante situaciones de cambio repentino, mi mayor dificultad es:", opts: [
+    {t:"No contar con suficiente información para tomar decisiones rápidas.",q:"CI"},
+    {t:"Mantener la concentración cuando hay mucha incertidumbre.",q:"CD"},
+    {t:"Sostener la calma emocional cuando el entorno social cambia bruscamente.",q:"LD"},
+    {t:"Abandonar el plan original y adaptarme a las nuevas circunstancias.",q:"LI"}
+  ]},
+  { text: "En el ámbito de la creatividad, mi limitación es:", opts: [
+    {t:"Me cuesta pensar fuera del marco lógico o científico establecido.",q:"CI"},
+    {t:"Me quedan muchas ideas a medias porque no las llevo a la práctica.",q:"CD"},
+    {t:"Dependo de la opinión de otros para validar mis ideas antes de implementarlas.",q:"LD"},
+    {t:"Me cuesta improvisar o crear sin un guion o estructura previos.",q:"LI"}
+  ]},
+  { text: "Reconozco que a veces soy demasiado:", opts: [
+    {t:"Escéptico y difícil de convencer sin evidencia sólida.",q:"CI"},
+    {t:"Optimista e ingenuo sobre la viabilidad de mis ideas.",q:"CD"},
+    {t:"Sensible a las críticas y necesito mucho apoyo emocional.",q:"LD"},
+    {t:"Rígido y me cuesta salir de mi zona de confort.",q:"LI"}
+  ]},
+  { text: "En términos de liderazgo, mi punto débil es:", opts: [
+    {t:"Generar motivación emocional en el equipo; suelo ser muy racional.",q:"CI"},
+    {t:"Mantener el enfoque del equipo cuando hay muchas ideas en el aire.",q:"CD"},
+    {t:"Tomar decisiones impopulares que afecten el bienestar del grupo.",q:"LD"},
+    {t:"Adaptarme cuando el plan inicial no funciona y el equipo necesita flexibilidad.",q:"LI"}
+  ]},
+  { text: "Cuando me doy cuenta de que cometí un error, mi tendencia es:", opts: [
+    {t:"Analizarlo en exceso y tardar mucho en perdonarme a mí mismo.",q:"CI"},
+    {t:"Desviar la atención rápidamente hacia algo nuevo en lugar de resolverlo.",q:"CD"},
+    {t:"Sentirme muy avergonzado, especialmente si afectó a alguien cercano.",q:"LD"},
+    {t:"Frustrarme si el error se debió a no haber seguido el proceso correcto.",q:"LI"}
+  ]}
+];
+
+// ============================================================
+// DATA: PART 2 — VOCATIONAL PREFERENCES (300 Likert items)
+// ============================================================
+const CAREERS = {
+  "Medicina": [
+    "Me gustaría diagnosticar enfermedades y diseñar tratamientos para pacientes en un entorno clínico.",
+    "Disfruto interpretar resultados de exámenes de laboratorio y relacionarlos con síntomas clínicos.",
+    "Me interesa estudiar el funcionamiento del cuerpo humano a nivel celular y sistémico.",
+    "Participaría con entusiasmo en urgencias médicas, tomando decisiones rápidas bajo presión.",
+    "Me atraería investigar nuevas terapias y medicamentos en ensayos clínicos.",
+    "Disfrutaría explicar diagnósticos y planes de tratamiento a pacientes y sus familias.",
+    "Me interesa seguir una especialización médica durante varios años de residencia hospitalaria.",
+    "Estaría motivado a atender consultas médicas y hacer seguimiento continuo a pacientes crónicos.",
+    "Me gustaría operar quirúrgicamente para resolver problemas de salud complejos.",
+    "Me atraería trabajar en salud pública para prevenir enfermedades en comunidades.",
+  ],
+  "Enfermería": [
+    "Me atraería cuidar directamente a pacientes hospitalizados durante su proceso de recuperación.",
+    "Disfrutaría aplicar medicamentos, monitorear signos vitales y registrar la evolución del paciente.",
+    "Me gustaría coordinar el equipo de salud en una sala hospitalaria.",
+    "Me interesa promover hábitos saludables en comunidades vulnerables.",
+    "Estaría motivado a trabajar en cuidados paliativos, brindando apoyo en el final de vida.",
+    "Disfruto el contacto humano cercano y el acompañamiento emocional a personas enfermas.",
+    "Me atraería el reto de trabajar en urgencias o UCI bajo alta presión.",
+    "Me interesa especializarme en enfermería pediátrica o neonatal.",
+    "Disfrutaría capacitar a cuidadores y familiares en el manejo de enfermos en casa.",
+    "Me gustaría participar en campañas de vacunación y prevención en el primer nivel de atención.",
+  ],
+  "Odontología": [
+    "Me atraería examinar, diagnosticar y tratar problemas de salud bucal en pacientes de todas las edades.",
+    "Disfruto trabajar con detalle y precisión en espacios pequeños, como la cavidad oral.",
+    "Me gustaría realizar extracciones, endodoncias y tratamientos periodontales.",
+    "Me interesa el diseño de sonrisas y los procedimientos de estética dental.",
+    "Estaría motivado a trabajar con aparatos de ortodoncia para corregir maloclusiones.",
+    "Me atraería realizar cirugías orales y maxilofaciales.",
+    "Disfruto explicar técnicas de higiene oral y prevención de caries a los pacientes.",
+    "Me gustaría trabajar con materiales dentales modernos y técnicas digitales de prótesis.",
+    "Me interesa la odontología pediátrica y el manejo de niños con miedo al dentista.",
+    "Me atraería la investigación en biomateriales para implantes dentales.",
+  ],
+  "Psicología": [
+    "Me interesa comprender los procesos mentales que determinan el comportamiento humano.",
+    "Disfrutaría llevar a cabo procesos terapéuticos con personas que sufren ansiedad o depresión.",
+    "Me atraería diseñar estrategias de intervención psicológica en contextos educativos.",
+    "Me gustaría aplicar pruebas psicométricas y elaborar informes de evaluación.",
+    "Estaría motivado a trabajar con comunidades en riesgo desde un enfoque psicosocial.",
+    "Me interesa la neuropsicología y el estudio del cerebro en relación con la conducta.",
+    "Disfruto escuchar, analizar discursos y detectar patrones de pensamiento.",
+    "Me atraería investigar nuevas formas de terapia cognitivo-conductual.",
+    "Me gustaría asesorar a empresas en selección de personal y clima organizacional.",
+    "Me interesa la psicología forense y el apoyo a víctimas de violencia.",
+  ],
+  "Nutrición y Dietética": [
+    "Me atraería diseñar planes de alimentación personalizados para mejorar la salud de las personas.",
+    "Disfruto analizar el valor nutricional de los alimentos y su impacto en el organismo.",
+    "Me gustaría trabajar con deportistas para optimizar su rendimiento a través de la dieta.",
+    "Me interesa asesorar a hospitales o clínicas en la planificación de dietas terapéuticas.",
+    "Estaría motivado a investigar nuevas tendencias en alimentación saludable y nutrición funcional.",
+    "Me atraería educar a la comunidad sobre hábitos alimenticios para prevenir enfermedades crónicas.",
+    "Me gustaría trabajar en la industria alimentaria controlando la calidad nutricional de productos.",
+    "Me interesa la nutrición pediátrica y el manejo de la malnutrición infantil.",
+    "Disfrutaría consultar individualmente a pacientes con obesidad, diabetes o trastornos alimenticios.",
+    "Me atraería el análisis de políticas de seguridad alimentaria a nivel nacional.",
+  ],
+  "Fisioterapia": [
+    "Me atraería rehabilitar a pacientes con lesiones musculares, óseas o neurológicas.",
+    "Disfruto el contacto directo con el cuerpo humano y la aplicación de técnicas manuales.",
+    "Me gustaría diseñar programas de ejercicio terapéutico para pacientes post-operatorios.",
+    "Me interesa la fisioterapia deportiva y la prevención de lesiones en atletas.",
+    "Estaría motivado a trabajar con personas mayores en programas de movilidad y equilibrio.",
+    "Me atraería usar tecnología como ultrasonido, electroterapia o láser en rehabilitación.",
+    "Me gustaría enseñar a los pacientes a realizar sus ejercicios de recuperación en casa.",
+    "Me interesa la fisioterapia pediátrica para niños con parálisis cerebral u otras condiciones.",
+    "Disfrutaría trabajar en equipo interdisciplinario con médicos y terapeutas ocupacionales.",
+    "Me atraería investigar nuevas técnicas de rehabilitación basadas en evidencia.",
+  ],
+  "Bacteriología": [
+    "Me atraería analizar muestras biológicas para detectar agentes infecciosos en laboratorio.",
+    "Disfruto trabajar con microscopios, cultivos y técnicas de diagnóstico microbiológico.",
+    "Me gustaría investigar la resistencia bacteriana a los antibióticos.",
+    "Me interesa el control de calidad microbiológico en la industria alimentaria o farmacéutica.",
+    "Estaría motivado a trabajar en laboratorios de salud pública detectando brotes epidémicos.",
+    "Me atraería el análisis serológico e inmunológico en el diagnóstico de enfermedades.",
+    "Me gustaría coordinar el procesamiento de muestras en bancos de sangre.",
+    "Me interesa la biología molecular aplicada al diagnóstico genético.",
+    "Disfrutaría elaborar informes técnicos de resultados de laboratorio para médicos tratantes.",
+    "Me atraería investigar marcadores bioquímicos para diagnóstico temprano de enfermedades.",
+  ],
+  "Optometría": [
+    "Me atraería examinar la salud visual de pacientes y prescribir correcciones ópticas.",
+    "Disfruto el trabajo de precisión con equipos de diagnóstico visual como tonómetros y refractómetros.",
+    "Me gustaría detectar y tratar patologías oculares como glaucoma o cataratas.",
+    "Me interesa adaptación de lentes de contacto y manejo de condiciones como el astigmatismo.",
+    "Estaría motivado a trabajar en rehabilitación visual para personas con baja visión.",
+    "Me atraería la optometría pediátrica y la detección temprana de ambliopía.",
+    "Me gustaría investigar nuevas tecnologías en lentes y corrección visual.",
+    "Me interesa la relación entre la salud ocular y las enfermedades sistémicas como diabetes.",
+    "Disfrutaría educar a la comunidad sobre la importancia de los chequeos visuales periódicos.",
+    "Me atraería el diseño y adaptación de ayudas ópticas para personas con discapacidad visual.",
+  ],
+  "Fonoaudiología": [
+    "Me atraería evaluar y tratar trastornos del habla, la voz, el lenguaje y la audición.",
+    "Disfruto trabajar con niños que tienen dificultades en la comunicación o el aprendizaje.",
+    "Me gustaría intervenir en la rehabilitación de personas que han sufrido accidentes cerebrovasculares.",
+    "Me interesa la audiología y el diagnóstico de pérdidas auditivas en adultos mayores.",
+    "Estaría motivado a trabajar con personas con autismo para desarrollar habilidades comunicativas.",
+    "Me atraería diseñar programas de estimulación del lenguaje en preescolar.",
+    "Me gustaría intervenir en disfagia (dificultades para deglutir) en pacientes neurológicos.",
+    "Me interesa la fonoaudiología corporativa y la optimización de la voz profesional.",
+    "Disfrutaría realizar terapia de lenguaje en contextos escolares inclusivos.",
+    "Me atraería investigar nuevas tecnologías para personas con parálisis o trastornos de comunicación.",
+  ],
+  "Ingeniería de Sistemas": [
+    "Disfruto diseñar y programar aplicaciones o sistemas digitales que resuelven problemas reales.",
+    "Me atraería desarrollar software escalable para empresas o usuarios finales.",
+    "Me gustaría diseñar arquitecturas de bases de datos y gestionar grandes volúmenes de información.",
+    "Me interesa la inteligencia artificial y el desarrollo de modelos de aprendizaje automático.",
+    "Estaría motivado a trabajar en ciberseguridad, protegiendo sistemas de ataques digitales.",
+    "Me atraería liderar proyectos de transformación digital en empresas de distintos sectores.",
+    "Me gustaría desarrollar videojuegos o experiencias de realidad virtual.",
+    "Me interesa el desarrollo de aplicaciones móviles para Android o iOS.",
+    "Disfrutaría analizar datos masivos (Big Data) para generar insights de valor.",
+    "Me atraería trabajar con computación en la nube y arquitecturas serverless.",
+  ],
+  "Ingeniería Civil": [
+    "Me atraería diseñar y supervisar la construcción de puentes, edificios y vías.",
+    "Disfruto trabajar con planos, cálculo estructural y materiales de construcción.",
+    "Me gustaría gestionar proyectos de infraestructura urbana a gran escala.",
+    "Me interesa el diseño de sistemas de acueducto, alcantarillado y gestión de aguas.",
+    "Estaría motivado a trabajar en la evaluación y refuerzo de estructuras existentes.",
+    "Me atraería el diseño vial y de transporte en ciudades en crecimiento.",
+    "Me gustaría usar software BIM para modelar proyectos de construcción en 3D.",
+    "Me interesa la ingeniería geotécnica y el estudio del comportamiento del suelo.",
+    "Disfrutaría evaluar el impacto ambiental de proyectos de infraestructura.",
+    "Me atraería gestionar contratos y presupuestos en grandes obras de construcción.",
+  ],
+  "Ingeniería Industrial": [
+    "Me atraería optimizar procesos productivos para hacerlos más eficientes y rentables.",
+    "Disfruto analizar flujos de trabajo, tiempos y movimientos en plantas de producción.",
+    "Me gustaría diseñar sistemas de gestión de calidad y mejora continua (Lean, Six Sigma).",
+    "Me interesa la logística, la cadena de suministro y la distribución de productos.",
+    "Estaría motivado a planificar la producción y gestionar inventarios en una empresa.",
+    "Me atraería trabajar en ergonomía y diseño de puestos de trabajo seguros.",
+    "Me gustaría modelar sistemas complejos y simular escenarios para la toma de decisiones.",
+    "Me interesa la gestión de proyectos con metodologías como PMI o PRINCE2.",
+    "Disfrutaría implementar tecnologías Industry 4.0 en ambientes fabriles.",
+    "Me atraería el análisis de costos y la mejora de la rentabilidad en operaciones industriales.",
+  ],
+  "Ingeniería Electrónica": [
+    "Me atraería diseñar circuitos electrónicos y sistemas embebidos para diferentes aplicaciones.",
+    "Disfruto programar microcontroladores y sistemas de control automático.",
+    "Me gustaría desarrollar sistemas de comunicaciones inalámbricas y procesamiento de señales.",
+    "Me interesa el diseño de sistemas electrónicos para la industria médica o aeroespacial.",
+    "Estaría motivado a trabajar en el Internet de las Cosas (IoT) y conectividad de dispositivos.",
+    "Me atraería la robótica y el desarrollo de sistemas mecatrónicos avanzados.",
+    "Me gustaría diseñar sistemas de instrumentación y sensores industriales.",
+    "Me interesa la electrónica de potencia y el diseño de fuentes de energía eficientes.",
+    "Disfrutaría trabajar en el desarrollo de prototipos electrónicos innovadores.",
+    "Me atraería investigar materiales semiconductores y su aplicación en nuevos dispositivos.",
+  ],
+  "Ingeniería Mecánica": [
+    "Me atraería diseñar máquinas, mecanismos y sistemas de transmisión de potencia.",
+    "Disfruto analizar el comportamiento mecánico de materiales bajo distintas condiciones.",
+    "Me gustaría diseñar y optimizar motores de combustión o sistemas de propulsión.",
+    "Me interesa la manufactura avanzada y los procesos de fabricación con CNC.",
+    "Estaría motivado a usar software CAD/CAM para diseñar piezas y ensambles complejos.",
+    "Me atraería la ingeniería térmica y el diseño de sistemas de climatización o refrigeración.",
+    "Me gustaría trabajar en el mantenimiento predictivo de maquinaria industrial.",
+    "Me interesa la ingeniería automotriz y el diseño de vehículos de alto desempeño.",
+    "Disfrutaría simular el comportamiento de estructuras y componentes con software FEM.",
+    "Me atraería la ingeniería aeroespacial y el diseño de componentes para aeronaves.",
+  ],
+  "Ingeniería Ambiental": [
+    "Me atraería diseñar soluciones para tratar aguas residuales y reducir la contaminación.",
+    "Disfruto trabajar en campo evaluando el impacto ambiental de actividades industriales.",
+    "Me gustaría desarrollar planes de gestión ambiental para empresas u organismos gubernamentales.",
+    "Me interesa la restauración ecológica de ecosistemas degradados.",
+    "Estaría motivado a investigar tecnologías limpias y energías renovables.",
+    "Me atraería el monitoreo de la calidad del aire, el agua y el suelo.",
+    "Me gustaría asesorar a comunidades en el manejo sostenible de sus recursos naturales.",
+    "Me interesa la normativa ambiental y el cumplimiento de regulaciones en empresas.",
+    "Disfrutaría trabajar en proyectos de economía circular y gestión de residuos.",
+    "Me atraería la modelación matemática del cambio climático y sus efectos en el territorio.",
+  ],
+  "Ingeniería Biomédica": [
+    "Me atraería diseñar equipos y dispositivos médicos como prótesis, marcapasos o monitores.",
+    "Disfruto combinar conocimientos de ingeniería y biología para resolver problemas de salud.",
+    "Me gustaría trabajar en el mantenimiento y calibración de equipos médicos hospitalarios.",
+    "Me interesa el desarrollo de sistemas de imagen médica como resonancia o tomografía.",
+    "Estaría motivado a investigar biomateriales e implantes biodegradables.",
+    "Me atraería desarrollar software de análisis de señales biológicas (ECG, EEG).",
+    "Me gustaría trabajar en la industria farmacéutica diseñando sistemas de administración de fármacos.",
+    "Me interesa la robótica quirúrgica y los sistemas de asistencia a cirujanos.",
+    "Disfrutaría diseñar órganos artificiales e ingeniería de tejidos.",
+    "Me atraería la telemedicina y el desarrollo de soluciones digitales para la salud.",
+  ],
+  "Ingeniería de Telecomunicaciones": [
+    "Me atraería diseñar y gestionar redes de comunicación móvil, satelital o por fibra óptica.",
+    "Disfruto trabajar con protocolos de comunicación y arquitecturas de red.",
+    "Me gustaría instalar y mantener infraestructura de telecomunicaciones a nivel regional o nacional.",
+    "Me interesa el desarrollo de soluciones 5G y redes de nueva generación.",
+    "Estaría motivado a investigar compresión de datos y transmisión de señales en entornos ruidosos.",
+    "Me atraería trabajar en radiodifusión o sistemas de comunicación satelital.",
+    "Me gustaría diseñar sistemas de seguridad para redes de comunicación.",
+    "Me interesa la integración de telecomunicaciones con inteligencia artificial.",
+    "Disfrutaría planificar y optimizar el desempeño de redes en empresas de telecomunicaciones.",
+    "Me atraería trabajar en la industria de videojuegos online o servicios de streaming.",
+  ],
+  "Derecho": [
+    "Me atraería defender los derechos de personas o empresas ante un tribunal.",
+    "Disfruto analizar casos jurídicos complejos y construir argumentos sólidos.",
+    "Me gustaría redactar contratos, escrituras y documentos legales con precisión.",
+    "Me interesa el derecho penal y la investigación de delitos.",
+    "Estaría motivado a trabajar en defensa de los derechos humanos y justicia social.",
+    "Me atraería la carrera judicial como juez, fiscal o magistrado.",
+    "Me gustaría asesorar a empresas en cumplimiento normativo y contratos comerciales.",
+    "Me interesa el derecho internacional y la resolución de conflictos entre Estados.",
+    "Disfrutaría negociar acuerdos extrajudiciales y mediar en conflictos.",
+    "Me atraería la docencia jurídica y la investigación en derecho constitucional.",
+  ],
+  "Sociología": [
+    "Me atraería investigar cómo las estructuras sociales determinan el comportamiento humano.",
+    "Disfruto analizar datos estadísticos y hacer encuestas sobre fenómenos sociales.",
+    "Me gustaría estudiar el impacto de las políticas públicas en comunidades vulnerables.",
+    "Me interesa la sociología de las organizaciones y el cambio social.",
+    "Estaría motivado a trabajar en ONGs o agencias internacionales en temas de desarrollo.",
+    "Me atraería el análisis crítico de las desigualdades de género, raza y clase.",
+    "Me gustaría hacer trabajo de campo etnográfico en comunidades rurales o urbanas.",
+    "Me interesa la sociología digital y el estudio de las redes sociales.",
+    "Disfrutaría diseñar políticas de inclusión social basadas en investigación.",
+    "Me atraería la docencia e investigación universitaria en ciencias sociales.",
+  ],
+  "Trabajo Social": [
+    "Me atraería acompañar a familias en situación de vulnerabilidad para mejorar su calidad de vida.",
+    "Disfruto escuchar, orientar y conectar a personas con los servicios sociales disponibles.",
+    "Me gustaría diseñar programas de intervención social para comunidades en riesgo.",
+    "Me interesa trabajar con niños y adolescentes en riesgo de exclusión.",
+    "Estaría motivado a gestionar proyectos de desarrollo comunitario en zonas rurales.",
+    "Me atraería el trabajo con personas en situación de calle o en procesos de rehabilitación.",
+    "Me gustaría coordinar voluntariado y redes de apoyo en situaciones de emergencia.",
+    "Me interesa la protección de derechos de víctimas de violencia doméstica.",
+    "Disfrutaría elaborar diagnósticos sociales y planes de atención individual.",
+    "Me atraería trabajar en hospitales o centros penitenciarios como trabajador social.",
+  ],
+  "Historia": [
+    "Me atraería investigar eventos del pasado a través de fuentes primarias y archivos históricos.",
+    "Disfruto construir narrativas que expliquen el origen de fenómenos políticos o culturales actuales.",
+    "Me gustaría trabajar en museos, archivos o bibliotecas patrimoniales.",
+    "Me interesa la historia latinoamericana y el análisis de los procesos de independencia y colonización.",
+    "Estaría motivado a publicar investigaciones históricas en revistas académicas especializadas.",
+    "Me atraería la historia ambiental y el estudio de las relaciones entre sociedades y naturaleza.",
+    "Me gustaría enseñar historia en colegios o universidades con enfoque crítico.",
+    "Me interesa la microhistoria y el estudio de comunidades locales y sus identidades.",
+    "Disfrutaría participar en proyectos de memoria histórica y reconciliación social.",
+    "Me atraería la arqueología y el estudio de civilizaciones antiguas a través de artefactos.",
+  ],
+  "Filosofía": [
+    "Me atraería analizar argumentos filosóficos clásicos y contemporáneos en profundidad.",
+    "Disfruto debatir sobre ética, justicia, libertad y el sentido de la existencia.",
+    "Me gustaría investigar y publicar ensayos en filosofía política o ética aplicada.",
+    "Me interesa la filosofía de la ciencia y los fundamentos del conocimiento.",
+    "Estaría motivado a enseñar filosofía en colegios y fomentar el pensamiento crítico.",
+    "Me atraería la bioética y el análisis de dilemas morales en salud y tecnología.",
+    "Me gustaría trabajar en consultoría ética para organizaciones o gobiernos.",
+    "Me interesa la lógica formal y la argumentación rigurosa.",
+    "Disfrutaría participar en simposios filosóficos y comunidades académicas internacionales.",
+    "Me atraería escribir libros de divulgación filosófica para el gran público.",
+  ],
+  "Antropología": [
+    "Me atraería estudiar culturas distintas a la mía a través de trabajo de campo prolongado.",
+    "Disfruto aprender idiomas y comprender visiones del mundo radicalmente diferentes.",
+    "Me gustaría investigar rituales, creencias y sistemas simbólicos de grupos humanos.",
+    "Me interesa la antropología forense y la identificación de restos humanos.",
+    "Estaría motivado a trabajar con comunidades indígenas en procesos de reconocimiento cultural.",
+    "Me atraería la antropología digital y el estudio de culturas en entornos virtuales.",
+    "Me gustaría publicar etnografías y contribuir al debate sobre diversidad cultural.",
+    "Me interesa la arqueología y el estudio del pasado humano a través de restos materiales.",
+    "Disfrutaría trabajar en organismos internacionales en temas de derechos culturales.",
+    "Me atraería la antropología médica y el estudio de la salud desde perspectivas culturales.",
+  ],
+  "Ciencias Políticas": [
+    "Me atraería analizar sistemas políticos y comparar modelos de gobierno en el mundo.",
+    "Disfruto seguir de cerca la actualidad política y entender las fuerzas que la determinan.",
+    "Me gustaría trabajar en diseño de políticas públicas o asesoría gubernamental.",
+    "Me interesa la geopolítica y el análisis de relaciones de poder entre países.",
+    "Estaría motivado a investigar movimientos sociales y su impacto en la democracia.",
+    "Me atraería la carrera diplomática y el servicio en organismos internacionales.",
+    "Me gustaría analizar datos electorales y tendencias de opinión pública.",
+    "Me interesa la teoría política y el pensamiento de autores clásicos y contemporáneos.",
+    "Disfrutaría trabajar en partidos políticos o en estrategia de campañas electorales.",
+    "Me atraería la docencia e investigación en universidades sobre temas de gobernabilidad.",
+  ],
+  "Relaciones Internacionales": [
+    "Me atraería negociar acuerdos entre países en temas de comercio, seguridad o medio ambiente.",
+    "Disfruto analizar la política exterior de diferentes naciones y sus implicaciones globales.",
+    "Me gustaría trabajar en organismos como la ONU, la OEA o la Unión Europea.",
+    "Me interesa el análisis de conflictos armados internacionales y mecanismos de paz.",
+    "Estaría motivado a gestionar proyectos de cooperación internacional para el desarrollo.",
+    "Me atraería el derecho internacional y los tratados entre Estados.",
+    "Me gustaría representar a mi país en embajadas o misiones diplomáticas.",
+    "Me interesa la seguridad internacional y el análisis de amenazas transnacionales.",
+    "Disfrutaría estudiar el multilateralismo y los mecanismos de gobernanza global.",
+    "Me atraería la comunicación intercultural y la negociación en contextos multiculturales.",
+  ],
+  "Administración de Empresas": [
+    "Me atraería dirigir una empresa, tomar decisiones estratégicas y coordinar equipos.",
+    "Disfruto analizar el desempeño financiero de organizaciones y proponer mejoras.",
+    "Me gustaría diseñar planes de negocio para emprendimientos o empresas existentes.",
+    "Me interesa la gestión del talento humano y el desarrollo organizacional.",
+    "Estaría motivado a liderar procesos de cambio e innovación en empresas.",
+    "Me atraería negociar con proveedores, clientes o socios estratégicos.",
+    "Me gustaría trabajar en consultoría de gestión asesorando a grandes organizaciones.",
+    "Me interesa el emprendimiento y la creación de startups con alto potencial de crecimiento.",
+    "Disfrutaría trabajar en el área de operaciones y mejora de procesos de una empresa.",
+    "Me atraería la gestión de proyectos y la coordinación de iniciativas interdepartamentales.",
+  ],
+  "Contaduría Pública": [
+    "Me atraería registrar, analizar e interpretar la información financiera de empresas.",
+    "Disfruto trabajar con números, estados financieros y conciliaciones contables.",
+    "Me gustaría asesorar a empresas en cumplimiento tributario y optimización fiscal.",
+    "Me interesa la auditoría financiera y la detección de irregularidades contables.",
+    "Estaría motivado a elaborar informes financieros para la toma de decisiones gerenciales.",
+    "Me atraería el control interno y la implementación de sistemas de gestión financiera.",
+    "Me gustaría trabajar en organismos de control como la Contraloría o la Superintendencia.",
+    "Me interesa la contabilidad internacional y las normas IFRS.",
+    "Disfrutaría asesorar a personas naturales en su declaración de renta e inversiones.",
+    "Me atraería la forense contable y la investigación de fraudes financieros.",
+  ],
+  "Economía": [
+    "Me atraería analizar el comportamiento de mercados y elaborar modelos económicos.",
+    "Disfruto interpretar indicadores macroeconómicos como el PIB, la inflación o el desempleo.",
+    "Me gustaría diseñar políticas económicas para mejorar el bienestar de una nación.",
+    "Me interesa la econometría y el análisis estadístico aplicado a problemas económicos.",
+    "Estaría motivado a trabajar en organismos como el Banco de la República o el FMI.",
+    "Me atraería la economía del comportamiento y el estudio de decisiones irracionales.",
+    "Me gustaría investigar el impacto económico de fenómenos como el cambio climático o las guerras.",
+    "Me interesa la microeconomía y el análisis de la conducta de empresas y consumidores.",
+    "Disfrutaría publicar investigaciones económicas en revistas académicas especializadas.",
+    "Me atraería trabajar como economista en el sector privado analizando tendencias de mercado.",
+  ],
+  "Finanzas y Comercio Internacional": [
+    "Me atraería estructurar portafolios de inversión y gestionar activos financieros.",
+    "Disfruto analizar riesgos financieros y diseñar estrategias de cobertura.",
+    "Me gustaría trabajar en banca de inversión gestionando fusiones y adquisiciones.",
+    "Me interesa el mercado de valores y la inversión en instrumentos bursátiles.",
+    "Estaría motivado a negociar contratos de comercio exterior en distintos mercados.",
+    "Me atraería el análisis de divisas y los mercados cambiarios internacionales.",
+    "Me gustaría diseñar estrategias de entrada a mercados internacionales para empresas.",
+    "Me interesa la financiación de proyectos de infraestructura con capitales privados o públicos.",
+    "Disfrutaría evaluar la viabilidad financiera de proyectos de inversión.",
+    "Me atraería trabajar en organismos como el Banco Mundial o el BID en proyectos de desarrollo.",
+  ],
+  "Marketing y Publicidad": [
+    "Me atraería diseñar campañas publicitarias creativas para posicionar marcas en el mercado.",
+    "Disfruto analizar el comportamiento del consumidor y sus motivaciones de compra.",
+    "Me gustaría gestionar redes sociales y crear contenido digital para marcas.",
+    "Me interesa el marketing digital y las estrategias de posicionamiento en buscadores.",
+    "Estaría motivado a realizar investigaciones de mercado y analizar datos de consumidores.",
+    "Me atraería el branding y la construcción de identidad visual de marcas.",
+    "Me gustaría trabajar en agencias creativas desarrollando conceptos publicitarios.",
+    "Me interesa la publicidad programática y el marketing basado en datos.",
+    "Disfrutaría gestionar el lanzamiento de productos y campañas de relaciones públicas.",
+    "Me atraería el neuromarketing y el estudio científico de las decisiones de compra.",
+  ],
+  "Negocios Internacionales": [
+    "Me atraería liderar operaciones comerciales en mercados de distintos países.",
+    "Disfruto entender las diferencias culturales y adaptarme a distintos contextos de negocios.",
+    "Me gustaría negociar contratos internacionales y acuerdos de distribución global.",
+    "Me interesa el análisis de oportunidades de exportación para productos colombianos.",
+    "Estaría motivado a trabajar en empresas multinacionales gestionando equipos multiculturales.",
+    "Me atraería el comercio electrónico internacional y las plataformas de venta global.",
+    "Me gustaría estudiar tratados de libre comercio y su impacto en las empresas.",
+    "Me interesa la logística internacional y la gestión de aduanas.",
+    "Disfrutaría vivir en diferentes países mientras desarrollo mi carrera profesional.",
+    "Me atraería crear y gestionar una empresa exportadora desde Colombia.",
+  ],
+  "Licenciatura en Matemáticas": [
+    "Me atraería enseñar matemáticas en colegios, haciendo que los estudiantes las amen.",
+    "Disfruto resolver problemas matemáticos complejos y buscar elegantes soluciones.",
+    "Me gustaría diseñar metodologías innovadoras para la enseñanza del pensamiento lógico.",
+    "Me interesa investigar en didáctica de las matemáticas y aprendizaje de conceptos abstractos.",
+    "Estaría motivado a preparar a estudiantes para olimpiadas de matemáticas.",
+    "Me atraería la formación de futuros docentes en áreas de ciencias exactas.",
+    "Me gustaría trabajar en el diseño curricular de programas de matemáticas.",
+    "Me interesa aplicar las matemáticas a la resolución de problemas de la vida cotidiana.",
+    "Disfrutaría investigar pedagogías alternativas para el aprendizaje de la geometría.",
+    "Me atraería tutorías y programas de refuerzo para estudiantes con dificultades en matemáticas.",
+  ],
+  "Licenciatura en Humanidades": [
+    "Me atraería fomentar el amor por la lectura y la escritura en niños y jóvenes.",
+    "Disfruto analizar textos literarios y reflexionar sobre su significado cultural.",
+    "Me gustaría diseñar proyectos de lectura crítica y escritura creativa en el aula.",
+    "Me interesa la lingüística y el análisis del funcionamiento del lenguaje.",
+    "Estaría motivado a integrar la filosofía, la ética y las humanidades en la formación escolar.",
+    "Me atraería investigar cómo las humanidades contribuyen al desarrollo del pensamiento crítico.",
+    "Me gustaría trabajar con comunidades en proyectos de recuperación de tradición oral.",
+    "Me interesa la enseñanza de español como lengua extranjera a nivel internacional.",
+    "Disfrutaría diseñar estrategias didácticas para enseñar literatura en colegios rurales.",
+    "Me atraería desarrollar materiales educativos interactivos para el área de humanidades.",
+  ],
+  "Licenciatura en Educación Física": [
+    "Me atraería promover el deporte y la actividad física como herramienta de desarrollo integral.",
+    "Disfruto diseñar sesiones de entrenamiento y juegos cooperativos para niños y jóvenes.",
+    "Me gustaría trabajar en la prevención de sedentarismo y enfermedades crónicas desde la escuela.",
+    "Me interesa la pedagogía del deporte y el desarrollo de habilidades motrices.",
+    "Estaría motivado a dirigir equipos deportivos escolares e intercolegiales.",
+    "Me atraería el acondicionamiento físico y la preparación atlética.",
+    "Me gustaría trabajar en recreación, lúdica y tiempo libre con distintas poblaciones.",
+    "Me interesa investigar los beneficios del deporte en la salud mental de los jóvenes.",
+    "Disfrutaría diseñar programas de actividad física adaptada para personas con discapacidad.",
+    "Me atraería la gestión deportiva y la dirección de clubes o ligas.",
+  ],
+  "Licenciatura en Inglés": [
+    "Me atraería enseñar inglés como segunda lengua de forma lúdica y efectiva.",
+    "Disfruto comunicarme en inglés y explorar culturas angloparlantes.",
+    "Me gustaría diseñar materiales didácticos innovadores para el aprendizaje del inglés.",
+    "Me interesa la lingüística aplicada y la adquisición de segundas lenguas.",
+    "Estaría motivado a capacitar a docentes en la enseñanza del inglés.",
+    "Me atraería trabajar en programas bilingües o de inmersión lingüística.",
+    "Me gustaría realizar intercambios culturales e investigar sobre pedagogías de idiomas.",
+    "Me interesa la traducción e interpretación como herramienta de comunicación intercultural.",
+    "Disfrutaría preparar a estudiantes para certificaciones internacionales de inglés.",
+    "Me atraería el aprendizaje de tecnología educativa para la enseñanza de idiomas.",
+  ],
+  "Licenciatura en Ciencias Naturales": [
+    "Me atraería despertar la curiosidad científica en niños y jóvenes a través de experimentos.",
+    "Disfruto enseñar biología, química o física con metodologías activas y experimentales.",
+    "Me gustaría desarrollar proyectos de educación ambiental en colegios.",
+    "Me interesa la didáctica de las ciencias y el aprendizaje por indagación.",
+    "Estaría motivado a investigar estrategias para mejorar la comprensión de conceptos científicos.",
+    "Me atraería diseñar laboratorios escolares y materiales para la práctica científica.",
+    "Me gustaría participar en ferias de ciencias y olimpiadas científicas con estudiantes.",
+    "Me interesa el trabajo interdisciplinario entre ciencias naturales y otras áreas del saber.",
+    "Disfrutaría diseñar salidas de campo que conecten la ciencia con el entorno natural local.",
+    "Me atraería trabajar con estudiantes en zonas rurales en proyectos de ciencia aplicada.",
+  ],
+  "Educación Especial": [
+    "Me atraería diseñar estrategias de enseñanza para estudiantes con discapacidad cognitiva.",
+    "Disfruto el trabajo paciente y personalizado con niños que tienen necesidades educativas especiales.",
+    "Me gustaría promover la inclusión de personas con discapacidad en entornos regulares.",
+    "Me interesa el autismo y el diseño de programas de comunicación aumentativa.",
+    "Estaría motivado a trabajar con personas con parálisis cerebral o síndrome de Down.",
+    "Me atraería la orientación a familias con hijos con necesidades educativas especiales.",
+    "Me gustaría asesorar a docentes en estrategias de aula inclusiva.",
+    "Me interesa la evaluación psicopedagógica y el diseño de adaptaciones curriculares.",
+    "Disfrutaría trabajar en instituciones especializadas con equipos interdisciplinarios.",
+    "Me atraería investigar y divulgar sobre derechos y accesibilidad de personas con discapacidad.",
+  ],
+  "Diseño Gráfico": [
+    "Me atraería diseñar identidades visuales y sistemas de comunicación gráfica para marcas.",
+    "Disfruto combinar tipografía, color e imágenes para crear piezas de comunicación eficaces.",
+    "Me gustaría trabajar en motion graphics y animación 2D o 3D.",
+    "Me interesa el diseño editorial y la maquetación de libros, revistas y catálogos.",
+    "Estaría motivado a diseñar interfaces de usuario (UI) para aplicaciones y sitios web.",
+    "Me atraería la ilustración digital y el diseño de personajes.",
+    "Me gustaría trabajar en una agencia creativa desarrollando campañas gráficas.",
+    "Me interesa el diseño de packaging y la identidad visual de productos.",
+    "Disfrutaría el diseño de señalética y sistemas de orientación visual.",
+    "Me atraería el diseño social para causas humanitarias y organizaciones sin ánimo de lucro.",
+  ],
+  "Diseño Industrial": [
+    "Me atraería diseñar objetos, productos y sistemas que mejoren la vida cotidiana.",
+    "Disfruto combinar funcionalidad, estética y viabilidad técnica en el diseño de objetos.",
+    "Me gustaría trabajar en el desarrollo de nuevos productos desde la conceptualización hasta el prototipo.",
+    "Me interesa el diseño ergonómico y la adaptación de objetos a las necesidades del usuario.",
+    "Estaría motivado a aplicar principios de diseño sostenible y economía circular.",
+    "Me atraería trabajar con materiales innovadores y procesos de manufactura aditiva (impresión 3D).",
+    "Me gustaría diseñar mobiliario, equipos médicos o productos de tecnología de consumo.",
+    "Me interesa la investigación sobre tendencias de consumo y necesidades del usuario.",
+    "Disfrutaría construir maquetas, modelos y prototipos de los productos que diseño.",
+    "Me atraería el diseño de experiencias de usuario (UX) en entornos físicos y digitales.",
+  ],
+  "Arquitectura": [
+    "Me atraería diseñar edificios que combinen funcionalidad, estética y sostenibilidad.",
+    "Disfruto representar mis ideas mediante planos, maquetas y software de modelado 3D.",
+    "Me gustaría diseñar espacios públicos que fortalezcan la vida en comunidad.",
+    "Me interesa la arquitectura bioclimática y el diseño de edificaciones eficientes.",
+    "Estaría motivado a restaurar y conservar el patrimonio arquitectónico histórico.",
+    "Me atraería diseñar viviendas de interés social que mejoren la calidad de vida.",
+    "Me gustaría trabajar en grandes proyectos de arquitectura corporativa o cultural.",
+    "Me interesa el urbanismo y la planificación de ciudades inclusivas y sostenibles.",
+    "Disfrutaría el diseño de interiores y la creación de ambientes funcionales y estéticos.",
+    "Me atraería investigar en arquitectura de emergencia o construcción en zonas de conflicto.",
+  ],
+  "Bellas Artes": [
+    "Me atraería expresar mis ideas y emociones a través de la pintura, escultura u otras técnicas.",
+    "Disfruto explorar libremente diferentes medios artísticos y desarrollar mi propio estilo.",
+    "Me gustaría exhibir mi obra en galerías y museos para conectar con el público.",
+    "Me interesa el arte conceptual y la exploración de ideas filosóficas a través de la creación.",
+    "Estaría motivado a investigar la historia del arte y sus corrientes contemporáneas.",
+    "Me atraería el arte comunitario y el muralismo como herramienta de transformación social.",
+    "Me gustaría trabajar en instalaciones artísticas y arte digital interactivo.",
+    "Me interesa la crítica de arte y la curaduría de exposiciones.",
+    "Disfrutaría desarrollar mi carrera como artista independiente.",
+    "Me atraería enseñar artes plásticas y estimular la creatividad en otros.",
+  ],
+  "Música": [
+    "Me atraería interpretar un instrumento musical a nivel profesional en conciertos.",
+    "Disfruto componer melodías originales y arreglos musicales para distintos géneros.",
+    "Me gustaría estudiar la teoría musical y la armonía a profundidad.",
+    "Me interesa la dirección de coros o ensambles musicales.",
+    "Estaría motivado a producir música en un estudio de grabación.",
+    "Me atraería la musicoterapia y el uso de la música como herramienta terapéutica.",
+    "Me gustaría enseñar música a niños y jóvenes desarrollando su sensibilidad artística.",
+    "Me interesa la etnomusicología y el estudio de músicas tradicionales del mundo.",
+    "Disfrutaría investigar la psicología de la música y sus efectos en el bienestar.",
+    "Me atraería el diseño sonoro para cine, videojuegos o experiencias interactivas.",
+  ],
+  "Cine y Televisión": [
+    "Me atraería dirigir películas o series que cuenten historias que impacten al espectador.",
+    "Disfruto escribir guiones y construir universos narrativos complejos.",
+    "Me gustaría fotografiar, iluminar y editar producciones audiovisuales.",
+    "Me interesa el documental como herramienta de denuncia y transformación social.",
+    "Estaría motivado a trabajar en la producción ejecutiva de grandes proyectos audiovisuales.",
+    "Me atraería el análisis de filmes y la crítica cinematográfica.",
+    "Me gustaría investigar los lenguajes del cine y la televisión desde una perspectiva académica.",
+    "Me interesa el cine experimental y las nuevas narrativas del videoarte.",
+    "Disfrutaría trabajar en efectos visuales y posproducción digital.",
+    "Me atraería distribuir y programar contenidos audiovisuales en festivales y plataformas.",
+  ],
+  "Fotografía": [
+    "Me atraería capturar momentos únicos y construir narrativas visuales a través de la imagen.",
+    "Disfruto explorar técnicas fotográficas como el retrato, el paisajismo o la fotografía documental.",
+    "Me gustaría trabajar en fotografía periodística cubriendo eventos de actualidad.",
+    "Me interesa la fotografía de moda, publicidad y producción editorial.",
+    "Estaría motivado a exhibir mis fotografías en galerías y publicaciones especializadas.",
+    "Me atraería la fotografía científica y la documentación de biodiversidad.",
+    "Me gustaría retratar comunidades y culturas en proyectos fotográficos de largo aliento.",
+    "Me interesa el retoque fotográfico y la postproducción digital avanzada.",
+    "Disfrutaría enseñar fotografía y compartir mi pasión por la imagen con otros.",
+    "Me atraería explorar la fotografía de naturaleza en paisajes de difícil acceso.",
+  ],
+  "Biología": [
+    "Me atraería investigar la biodiversidad y los ecosistemas en ambientes naturales.",
+    "Disfruto trabajar en laboratorios con cultivos celulares, microscopía y biología molecular.",
+    "Me gustaría estudiar la evolución de las especies y su adaptación al cambio climático.",
+    "Me interesa la biología marina y el estudio de ecosistemas acuáticos.",
+    "Estaría motivado a trabajar en conservación y gestión de áreas protegidas.",
+    "Me atraería la biotecnología y el desarrollo de aplicaciones biológicas innovadoras.",
+    "Me gustaría investigar mecanismos moleculares de enfermedades para desarrollar tratamientos.",
+    "Me interesa la ecología y el estudio de las interacciones entre organismos y su ambiente.",
+    "Disfrutaría enseñar biología en universidades y formar nuevas generaciones de científicos.",
+    "Me atraería la bioinformática y el análisis de genomas con herramientas computacionales.",
+  ],
+  "Química": [
+    "Me atraería sintetizar nuevos compuestos con aplicaciones en farmacia, materiales o alimentos.",
+    "Disfruto realizar experimentos en laboratorio y analizar los resultados con rigor.",
+    "Me gustaría trabajar en control de calidad en la industria química o farmacéutica.",
+    "Me interesa la química ambiental y el análisis de contaminantes en agua, suelo y aire.",
+    "Estaría motivado a investigar nuevas fuentes de energía limpia como pilas de hidrógeno.",
+    "Me atraería la química computacional y el modelado molecular.",
+    "Me gustaría trabajar en el desarrollo de polímeros, plásticos o materiales avanzados.",
+    "Me interesa la química de alimentos y la innovación en productos de consumo.",
+    "Disfrutaría la docencia universitaria en química y la formación de investigadores.",
+    "Me atraería investigar procesos de catálisis para desarrollar reacciones más eficientes.",
+  ],
+  "Física": [
+    "Me atraería investigar los fundamentos de la materia, la energía y el universo.",
+    "Disfruto resolver problemas matemáticos complejos vinculados a fenómenos naturales.",
+    "Me gustaría trabajar en física experimental desarrollando y calibrando instrumentos de medición.",
+    "Me interesa la astrofísica y el estudio de estrellas, galaxias y fenómenos cósmicos.",
+    "Estaría motivado a investigar en mecánica cuántica y física de partículas.",
+    "Me atraería aplicar la física en el desarrollo de tecnologías médicas como la radioterapia.",
+    "Me gustaría modelar matemáticamente fenómenos como el clima, los fluidos o los sólidos.",
+    "Me interesa la física del estado sólido y el desarrollo de nuevos materiales.",
+    "Disfrutaría la docencia universitaria en física y la divulgación científica.",
+    "Me atraería trabajar en laboratorios internacionales de investigación de vanguardia.",
+  ],
+  "Matemáticas": [
+    "Me atraería investigar en áreas abstractas de las matemáticas como la topología o el álgebra.",
+    "Disfruto demostrar teoremas y construir estructuras lógicas formales.",
+    "Me gustaría aplicar las matemáticas a la criptografía y la seguridad informática.",
+    "Me interesa la matemática aplicada a la economía, la física o la biología.",
+    "Estaría motivado a trabajar en el desarrollo de algoritmos de optimización.",
+    "Me atraería la teoría de juegos y sus aplicaciones en economía y ciencias sociales.",
+    "Me gustaría enseñar matemáticas a nivel universitario y formar matemáticos.",
+    "Me interesa la geometría diferencial y sus aplicaciones en física teórica.",
+    "Disfrutaría investigar y publicar en revistas matemáticas internacionales.",
+    "Me atraería el análisis numérico y la computación científica.",
+  ],
+  "Estadística": [
+    "Me atraería diseñar encuestas y experimentos estadísticos para obtener conclusiones válidas.",
+    "Disfruto analizar grandes conjuntos de datos y extraer patrones significativos.",
+    "Me gustaría trabajar en el instituto de estadística nacional diseñando indicadores socioeconómicos.",
+    "Me interesa la bioestadística y el diseño de estudios clínicos.",
+    "Estaría motivado a desarrollar modelos predictivos para el sector financiero o empresarial.",
+    "Me atraería el análisis de riesgo y la estadística actuarial para compañías de seguros.",
+    "Me gustaría trabajar en análisis de datos para campañas políticas o de salud pública.",
+    "Me interesa la estadística bayesiana y su aplicación en aprendizaje automático.",
+    "Disfrutaría enseñar estadística y promover la cultura del dato en organizaciones.",
+    "Me atraería la visualización de datos y la creación de dashboards para la toma de decisiones.",
+  ],
+  "Ciencias de la Computación": [
+    "Me atraería investigar en áreas como computación cuántica, algoritmos o teoría de la complejidad.",
+    "Disfruto diseñar estructuras de datos eficientes y algoritmos optimizados.",
+    "Me gustaría trabajar en el desarrollo de lenguajes de programación o compiladores.",
+    "Me interesa la inteligencia artificial y el diseño de agentes autónomos.",
+    "Estaría motivado a investigar en sistemas distribuidos y computación en la nube.",
+    "Me atraería la criptografía y el diseño de protocolos de seguridad informática.",
+    "Me gustaría trabajar en bioinformática, combinando computación y biología.",
+    "Me interesa la visión por computador y el procesamiento de imágenes.",
+    "Disfrutaría publicar investigaciones en conferencias internacionales de computación.",
+    "Me atraería el procesamiento de lenguaje natural y la creación de sistemas de IA conversacional.",
+  ],
+  "Comunicación Social": [
+    "Me atraería narrar historias que visibilicen realidades sociales y generen impacto.",
+    "Disfruto investigar, entrevistar y construir reportajes de profundidad.",
+    "Me gustaría trabajar en medios de comunicación como periodista o editor.",
+    "Me interesa la comunicación para el desarrollo y la comunicación comunitaria.",
+    "Estaría motivado a gestionar la comunicación institucional de organizaciones o empresas.",
+    "Me atraería crear contenido digital para redes sociales, podcasts o canales de YouTube.",
+    "Me gustaría investigar el impacto de los medios en la opinión pública y la democracia.",
+    "Me interesa el periodismo de datos y el uso de herramientas digitales para informar.",
+    "Disfrutaría producir documentales o reportajes televisivos.",
+    "Me atraería trabajar en comunicación política y estrategia de campañas.",
+  ],
+  "Periodismo": [
+    "Me atraería investigar y revelar información de interés público con rigor y ética.",
+    "Disfruto escribir artículos, crónicas y reportajes que informen y generen debate.",
+    "Me gustaría cubrir eventos de actualidad política, económica o social para medios.",
+    "Me interesa el periodismo de guerra y la cobertura de conflictos internacionales.",
+    "Estaría motivado a dirigir un medio de comunicación o un periódico digital.",
+    "Me atraería el periodismo de investigación y la exposición de la corrupción.",
+    "Me gustaría trabajar en periodismo científico divulgando avances de la ciencia.",
+    "Me interesa el fact-checking y la lucha contra la desinformación.",
+    "Disfrutaría hacer periodismo multimedia, combinando texto, audio y video.",
+    "Me atraería crear narrativas periodísticas innovadoras con tecnología interactiva.",
+  ],
+  "Publicidad": [
+    "Me atraería conceptualizar y ejecutar campañas publicitarias que conecten marcas con consumidores.",
+    "Disfruto el proceso creativo de generar ideas sorprendentes e impactantes para anunciar.",
+    "Me gustaría escribir textos publicitarios (copy) persuasivos para distintos medios.",
+    "Me interesa la planificación de medios y la pauta publicitaria estratégica.",
+    "Estaría motivado a trabajar en el área de cuentas gestionando relaciones con clientes.",
+    "Me atraería investigar al consumidor para desarrollar insights que inspiren creatividad.",
+    "Me gustaría trabajar en publicidad digital: SEO, SEM, display y social ads.",
+    "Me interesa la publicidad experiencial y los eventos de marca.",
+    "Disfrutaría ganar premios de creatividad publicitaria a nivel nacional e internacional.",
+    "Me atraería crear una agencia de publicidad y gestionar mis propios clientes.",
+  ],
+  "Producción de Radio y Televisión": [
+    "Me atraería producir programas de radio o televisión con alto impacto en la audiencia.",
+    "Disfruto el trabajo detrás de cámaras: edición, sonido, iluminación y posproducción.",
+    "Me gustaría escribir guiones para programas de entretenimiento o culturales.",
+    "Me interesa la dirección de programas en vivo con coordinación de múltiples elementos.",
+    "Estaría motivado a producir podcasts o contenido sonoro innovador.",
+    "Me atraería trabajar en canales públicos o privados como realizador audiovisual.",
+    "Me gustaría combinar periodismo y producción para crear magazines informativos.",
+    "Me interesa la producción musical y el diseño de bandas sonoras para producciones.",
+    "Disfrutaría gestionar la producción de eventos masivos transmitidos en vivo.",
+    "Me atraería investigar nuevos formatos narrativos para plataformas de streaming.",
+  ],
+  "Agronomía": [
+    "Me atraería mejorar la productividad y sostenibilidad de los cultivos agrícolas.",
+    "Disfruto trabajar en el campo diseñando sistemas de riego y nutrición vegetal.",
+    "Me gustaría investigar variedades resistentes a plagas o al cambio climático.",
+    "Me interesa la agricultura de precisión y el uso de tecnología en el campo.",
+    "Estaría motivado a asesorar a pequeños productores rurales en buenas prácticas agrícolas.",
+    "Me atraería trabajar en empresas semilleras o de agroquímicos en investigación y desarrollo.",
+    "Me gustaría diseñar sistemas agroforestales que combinen producción y conservación.",
+    "Me interesa la fitosanidad y el control biológico de plagas.",
+    "Disfrutaría trabajar en proyectos de seguridad alimentaria en comunidades rurales.",
+    "Me atraería la agricultura urbana y el desarrollo de huertos sostenibles en ciudades.",
+  ],
+  "Medicina Veterinaria y Zootecnia": [
+    "Me atraería diagnosticar y tratar enfermedades en animales domésticos y de producción.",
+    "Disfruto el contacto directo con animales de distintas especies.",
+    "Me gustaría trabajar en la sanidad animal y el control de zoonosis.",
+    "Me interesa la producción animal sostenible y el mejoramiento genético de razas.",
+    "Estaría motivado a trabajar en zoológicos, parques naturales o reservas de fauna.",
+    "Me atraería la medicina de animales silvestres y la rehabilitación de fauna.",
+    "Me gustaría investigar nuevas vacunas y tratamientos para enfermedades animales.",
+    "Me interesa el bienestar animal y la regulación del comercio de mascotas.",
+    "Disfrutaría trabajar en inocuidad alimentaria y control de calidad de productos de origen animal.",
+    "Me atraería la acuicultura y la producción sostenible de peces y mariscos.",
+  ],
+  "Ingeniería Agroforestal": [
+    "Me atraería diseñar sistemas que combinen producción agropecuaria y aprovechamiento forestal.",
+    "Disfruto trabajar en campo analizando suelos y planificando el uso sostenible del territorio.",
+    "Me gustaría implementar proyectos de reforestación y restauración de bosques.",
+    "Me interesa la certificación de productos agroforestales para mercados nacionales e internacionales.",
+    "Estaría motivado a trabajar con comunidades rurales en sistemas productivos sostenibles.",
+    "Me atraería investigar sobre carbono forestal y mercados de compensación ambiental.",
+    "Me gustaría diseñar políticas de ordenamiento territorial rural.",
+    "Me interesa la silvicultura y el manejo técnico de plantaciones forestales comerciales.",
+    "Disfrutaría trabajar en proyectos de cooperación internacional en desarrollo rural.",
+    "Me atraería el ecoturismo y el diseño de rutas naturales en zonas con potencial forestal.",
+  ],
+  "Ecología": [
+    "Me atraería estudiar las relaciones entre los organismos vivos y su ambiente natural.",
+    "Disfruto hacer salidas de campo, muestreos y análisis de biodiversidad.",
+    "Me gustaría investigar el impacto del cambio climático en los ecosistemas.",
+    "Me interesa la ecología de paisajes y el diseño de corredores biológicos.",
+    "Estaría motivado a trabajar en parques nacionales y áreas protegidas.",
+    "Me atraería investigar la contaminación ambiental y sus efectos en las comunidades ecológicas.",
+    "Me gustaría trabajar con organizaciones internacionales de conservación como WWF o UICN.",
+    "Me interesa la modelación ecológica y el uso de SIG para análisis territorial.",
+    "Disfrutaría enseñar ecología y promover la educación ambiental en distintos niveles.",
+    "Me atraería investigar la relación entre biodiversidad y servicios ecosistémicos.",
+  ]
+};
+
+// ============================================================
+// DATA: PART 3 — VAK (18 items)
+// ============================================================
+const P3_QUESTIONS = [
+  { text: "Cuando aprendo algo nuevo, prefiero:", opts: [
+    {t:"Leer o ver esquemas, mapas conceptuales o diagramas.",s:"V"},
+    {t:"Escuchar una explicación oral o un podcast.",s:"A"},
+    {t:"Practicarlo directamente con mis manos o en situaciones reales.",s:"K"}
+  ]},
+  { text: "Cuando necesito recordar información importante para un examen:", opts: [
+    {t:"Hago resúmenes, mapas mentales o tablas visuales.",s:"V"},
+    {t:"Leo en voz alta o grabo mis notas para escucharlas.",s:"A"},
+    {t:"Practico resolviendo ejercicios o escribiendo repetidamente.",s:"K"}
+  ]},
+  { text: "En una clase magistral, lo que más me ayuda a aprender es:", opts: [
+    {t:"Ver la información en el tablero, diapositivas o materiales escritos.",s:"V"},
+    {t:"La voz y explicación del profesor, escuchar con atención.",s:"A"},
+    {t:"Tomar apuntes activos, subrayar o hacer esquemas mientras escucho.",s:"K"}
+  ]},
+  { text: "Cuando alguien me da indicaciones para llegar a un lugar, prefiero:", opts: [
+    {t:"Ver un mapa o que me dibujen el camino.",s:"V"},
+    {t:"Que me expliquen verbalmente las instrucciones.",s:"A"},
+    {t:"Caminar o ir recorriendo el camino mientras me explican.",s:"K"}
+  ]},
+  { text: "Al aprender un idioma nuevo, me resulta más fácil:", opts: [
+    {t:"Leer textos y ver materiales escritos en ese idioma.",s:"V"},
+    {t:"Escuchar canciones, podcasts o conversaciones nativas.",s:"A"},
+    {t:"Practicar conversando, actuando o en situaciones cotidianas reales.",s:"K"}
+  ]},
+  { text: "Cuando tengo un problema difícil de resolver, suelo:", opts: [
+    {t:"Dibujarlo, graficarlo o escribirlo para visualizarlo mejor.",s:"V"},
+    {t:"Hablar sobre el problema con alguien o pensar en voz alta.",s:"A"},
+    {t:"Levantarme, caminar y buscar soluciones moviéndome.",s:"K"}
+  ]},
+  { text: "Al recordar experiencias pasadas, generalmente:", opts: [
+    {t:"Recuerdo imágenes, colores y la forma en que lucían las cosas.",s:"V"},
+    {t:"Recuerdo las conversaciones, los sonidos y las palabras que se dijeron.",s:"A"},
+    {t:"Recuerdo cómo me sentía físicamente y qué estaba haciendo.",s:"K"}
+  ]},
+  { text: "Cuando exploro una ciudad nueva, prefiero:", opts: [
+    {t:"Consultar mapas, guías visuales y planos del lugar.",s:"V"},
+    {t:"Preguntar a los locales o escuchar recomendaciones orales.",s:"A"},
+    {t:"Explorar caminando y descubrir los lugares yo mismo.",s:"K"}
+  ]},
+  { text: "En el trabajo en grupo, contribuyo mejor cuando:", opts: [
+    {t:"Presento la información visualmente con esquemas o presentaciones.",s:"V"},
+    {t:"Explico verbalmente mis ideas y debato con el equipo.",s:"A"},
+    {t:"Me encargo de la parte práctica, de hacer o construir algo.",s:"K"}
+  ]},
+  { text: "Al comprar un electrodoméstico nuevo, suelo:", opts: [
+    {t:"Leer el manual y ver los diagramas de instrucciones.",s:"V"},
+    {t:"Llamar a alguien que me explique cómo funciona.",s:"A"},
+    {t:"Probarlo directamente sin leer el manual.",s:"K"}
+  ]},
+  { text: "Durante una conferencia o charla, me concentro mejor cuando:", opts: [
+    {t:"El ponente usa presentaciones, gráficos e imágenes.",s:"V"},
+    {t:"El ponente tiene una voz clara, ritmo variado y ejemplos auditivos.",s:"A"},
+    {t:"Puedo tomar apuntes activos, moverme o participar en dinámicas.",s:"K"}
+  ]},
+  { text: "Para mí, el tiempo de estudio más productivo es cuando:", opts: [
+    {t:"Tengo un espacio ordenado con materiales visuales bien organizados.",s:"V"},
+    {t:"Hay música de fondo o puedo repetir la información en voz alta.",s:"A"},
+    {t:"Puedo alternar estudio con movimiento o actividades prácticas.",s:"K"}
+  ]},
+  { text: "Al aprender a cocinar un plato nuevo, prefiero:", opts: [
+    {t:"Ver un video paso a paso con imágenes claras del proceso.",s:"V"},
+    {t:"Escuchar a alguien que me describa verbalmente los pasos.",s:"A"},
+    {t:"Lanzarme directamente a cocinar aprendiendo sobre la marcha.",s:"K"}
+  ]},
+  { text: "En mi tiempo libre, tiendo a disfrutar más:", opts: [
+    {t:"Ver películas, fotografías o navegar por contenido visual.",s:"V"},
+    {t:"Escuchar música, podcasts o conversaciones.",s:"A"},
+    {t:"Practicar deportes, bailar, hacer manualidades o actividades físicas.",s:"K"}
+  ]},
+  { text: "Cuando me siento estresado, lo que más me ayuda es:", opts: [
+    {t:"Organizar visualmente mis tareas o ver algo bello y ordenado.",s:"V"},
+    {t:"Hablar con alguien o escuchar música relajante.",s:"A"},
+    {t:"Hacer ejercicio, caminar o realizar una actividad física.",s:"K"}
+  ]},
+  { text: "Al estudiar historia o literatura, aprendo mejor cuando:", opts: [
+    {t:"Tengo líneas de tiempo, mapas e imágenes del período estudiado.",s:"V"},
+    {t:"El profesor narra los eventos con mucho detalle oral o uso audiolibros.",s:"A"},
+    {t:"Hago dramatizaciones, role plays o visitas a museos.",s:"K"}
+  ]},
+  { text: "Cuando conozco a alguien nuevo, lo que más recuerdo después es:", opts: [
+    {t:"Su apariencia, ropa y cómo lucía.",s:"V"},
+    {t:"Su voz, lo que dijo y cómo habló.",s:"A"},
+    {t:"Cómo me hizo sentir y si hubo contacto físico como un apretón de manos.",s:"K"}
+  ]},
+  { text: "Para memorizar una lista de datos importantes, lo más eficaz para mí es:", opts: [
+    {t:"Crear una imagen mental, un diagrama o un mapa conceptual.",s:"V"},
+    {t:"Repetirlos en voz alta como si fuera una canción o una rima.",s:"A"},
+    {t:"Escribirlos varias veces o asociarlos a movimientos físicos.",s:"K"}
+  ]}
+];
+
+// ============================================================
+// APP STATE
+// ============================================================
+let state = {
+  name: "",
+  date: new Date().toLocaleDateString("es-CO", {year:"numeric",month:"long",day:"numeric"}),
+  p1A: new Array(20).fill(null),
+  p1B: new Array(20).fill(null),
+  p1Idx: 0,
+  p2Answers: {},
+  p2Idx: 0,
+  p3Answers: new Array(18).fill(null),
+  p3Idx: 0,
+  phase: "welcome"
+};
+
+const TOTAL_ITEMS = 358;
+
+function saveState() { try { localStorage.setItem("tov_state", JSON.stringify(state)); } catch(e){} }
+function loadState() {
+  try {
+    const s = localStorage.getItem("tov_state");
+    if (s) { state = JSON.parse(s); return true; }
+  } catch(e){}
+  return false;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("r")) {
+    try {
+      state = JSON.parse(atob(urlParams.get("r")));
+      showScreen("report-screen");
+      renderReport();
+      return;
+    } catch(e){}
+  }
+  if (loadState() && state.phase !== "welcome") {
+    resumeFromState();
+  }
+});
+
+function resumeFromState() {
+  document.getElementById("global-progress").style.display = "flex";
+  if (state.phase === "p1") showScreen("p1-screen"), renderP1();
+  else if (state.phase === "trans12") showScreen("trans-12");
+  else if (state.phase === "p2") showScreen("p2-screen"), renderP2();
+  else if (state.phase === "trans23") showScreen("trans-23");
+  else if (state.phase === "p3") showScreen("p3-screen"), renderP3();
+  else if (state.phase === "report") showScreen("report-screen"), renderReport();
+  updateGlobalProgress();
+}
+
+function startTest() {
+  const name = document.getElementById("username-input").value.trim();
+  if (!name) { showToast("Por favor escribe tu nombre para comenzar."); return; }
+  state.name = name;
+  state.phase = "p1";
+  saveState();
+  document.getElementById("global-progress").style.display = "flex";
+  showScreen("p1-screen");
+  renderP1();
+  updateGlobalProgress();
+}
+
+// ============================================================
+// SCREENS
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => { s.classList.remove("active"); s.style.display = "none"; });
+  const el = document.getElementById(id);
+  el.style.display = "";
+  el.classList.add("active");
+  window.scrollTo(0,0);
+}
+
+// ============================================================
+// PART 1
+// ============================================================
+const P1_ALL = [...P1_STRENGTHS, ...P1_WEAKNESSES];
+
+function shuffled(arr) {
+  const a = [...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;
+}
+
+let p1Shuffled = [];
+function getP1Shuffled(idx) {
+  if (!p1Shuffled[idx]) p1Shuffled[idx] = shuffled(P1_ALL[idx].opts.map((_,i) => i));
+  return p1Shuffled[idx];
+}
+
+function renderP1() {
+  const idx = state.p1Idx;
+  const isA = idx < 20;
+  const label = isA ? "Bloque A — Fortalezas" : "Bloque B — Debilidades";
+  document.getElementById("p1-block-label").textContent = label;
+  document.getElementById("p1-prog-text").textContent = `Pregunta ${idx+1} de 40`;
+  document.getElementById("p1-fill").style.width = `${((idx+1)/40)*100}%`;
+
+  const q = P1_ALL[idx];
+  const order = getP1Shuffled(idx);
+  const answer = isA ? state.p1A[idx] : state.p1B[idx-20];
+
+  const letters = ["a","b","c","d"];
+  let html = `<div class="question-card"><span class="q-num">Pregunta ${idx+1}</span><p class="q-text">${q.text}</p><div class="options">`;
+  order.forEach((oi, li) => {
+    const opt = q.opts[oi];
+    const sel = (answer !== null && answer === oi) ? "selected" : "";
+    html += `<div class="option ${sel}" onclick="selectP1(${oi})"><span class="opt-letter">${letters[li]}</span><span>${opt.t}</span></div>`;
+  });
+  html += `</div></div>`;
+  document.getElementById("p1-question-area").innerHTML = html;
+  document.getElementById("p1-next-btn").textContent = idx === 39 ? "Continuar →" : "Siguiente →";
+  updateGlobalProgress();
+}
+
+function selectP1(optIdx) {
+  const idx = state.p1Idx;
+  if (idx < 20) state.p1A[idx] = optIdx;
+  else state.p1B[idx-20] = optIdx;
+  saveState();
+  renderP1();
+}
+
+function p1Prev() {
+  if (state.p1Idx > 0) { state.p1Idx--; saveState(); renderP1(); }
+}
+
+function p1Next() {
+  const idx = state.p1Idx;
+  const ans = idx < 20 ? state.p1A[idx] : state.p1B[idx-20];
+  if (ans === null) { showToast("Por favor elige una opción antes de continuar."); return; }
+  if (idx < 39) { state.p1Idx++; saveState(); renderP1(); }
+  else {
+    if (!state.p1A.every(v=>v!==null) || !state.p1B.every(v=>v!==null)) { showToast("Hay preguntas sin responder."); return; }
+    state.phase = "trans12"; saveState(); showScreen("trans-12"); updateGlobalProgress();
+  }
+}
+
+// ============================================================
+// PART 2
+// ============================================================
+const P2_ITEMS = [];
+const P2_CAREER_MAP = [];
+Object.entries(CAREERS).forEach(([career, items]) => {
+  items.forEach(text => {
+    P2_CAREER_MAP.push(career);
+    P2_ITEMS.push(text);
+  });
+});
+
+const LIKERT_LABELS = ["No me interesa nada","Me interesa poco","Me es indiferente","Me interesa","Me apasiona"];
+
+function startP2() {
+  state.phase = "p2";
+  if (!state.p2Answers) state.p2Answers = {};
+  saveState();
+  showScreen("p2-screen");
+  renderP2();
+  updateGlobalProgress();
+}
+
+function renderP2() {
+  const blockSize = 10;
+  const totalBlocks = Math.ceil(P2_ITEMS.length / blockSize);
+  const blockIdx = state.p2Idx;
+  const start = blockIdx * blockSize;
+  const end = Math.min(start + blockSize, P2_ITEMS.length);
+  const items = P2_ITEMS.slice(start, end);
+
+  document.getElementById("p2-prog-text").textContent = `Bloque ${blockIdx+1} de ${totalBlocks}`;
+  document.getElementById("p2-fill").style.width = `${((blockIdx+1)/totalBlocks)*100}%`;
+
+  const career = P2_CAREER_MAP[start];
+  document.getElementById("p2-block-label").textContent = `Área: ${career}`;
+
+  let html = "";
+  items.forEach((text, li) => {
+    const globalIdx = start + li;
+    const val = state.p2Answers[globalIdx] || 0;
+    html += `<div class="likert-card"><p class="likert-text"><strong>${globalIdx+1}.</strong> ${text}</p>
+    <div class="likert-scale">`;
+    for (let v = 1; v <= 5; v++) {
+      const chk = val === v ? "checked" : "";
+      html += `<label><input type="radio" name="lk_${globalIdx}" value="${v}" ${chk} onchange="selectLikert(${globalIdx},${v})"><span class="lval">${v}</span><span class="llabel">${LIKERT_LABELS[v-1]}</span></label>`;
+    }
+    html += `</div></div>`;
+  });
+  document.getElementById("p2-question-area").innerHTML = html;
+  document.getElementById("p2-next-btn").textContent = blockIdx === totalBlocks-1 ? "Continuar →" : "Siguiente →";
+  updateGlobalProgress();
+}
+
+function selectLikert(idx, val) {
+  state.p2Answers[idx] = val;
+  saveState();
+}
+
+function p2Prev() {
+  if (state.p2Idx > 0) { state.p2Idx--; saveState(); renderP2(); }
+}
+
+function p2Next() {
+  const blockSize = 10;
+  const start = state.p2Idx * blockSize;
+  const end = Math.min(start + blockSize, P2_ITEMS.length);
+  for (let i = start; i < end; i++) {
+    if (!state.p2Answers[i]) { showToast("Por favor califica todos los ítems del bloque."); return; }
+  }
+  const totalBlocks = Math.ceil(P2_ITEMS.length / blockSize);
+  if (state.p2Idx < totalBlocks-1) { state.p2Idx++; saveState(); renderP2(); }
+  else {
+    state.phase = "trans23"; saveState(); showScreen("trans-23"); updateGlobalProgress();
+  }
+}
+
+// ============================================================
+// PART 3
+// ============================================================
+let p3Shuffled = [];
+function getP3Shuffled(idx) {
+  if (!p3Shuffled[idx]) p3Shuffled[idx] = shuffled([0,1,2]);
+  return p3Shuffled[idx];
+}
+
+function startP3() {
+  state.phase = "p3"; saveState(); showScreen("p3-screen"); renderP3(); updateGlobalProgress();
+}
+
+function renderP3() {
+  const idx = state.p3Idx;
+  document.getElementById("p3-prog-text").textContent = `Pregunta ${idx+1} de 18`;
+  document.getElementById("p3-fill").style.width = `${((idx+1)/18)*100}%`;
+  const q = P3_QUESTIONS[idx];
+  const order = getP3Shuffled(idx);
+  const answer = state.p3Answers[idx];
+  const letters = ["a","b","c"];
+  let html = `<div class="question-card"><span class="q-num">Pregunta ${idx+1}</span><p class="q-text">${q.text}</p><div class="options">`;
+  order.forEach((oi, li) => {
+    const opt = q.opts[oi];
+    const sel = answer !== null && answer === oi ? "selected" : "";
+    html += `<div class="option ${sel}" onclick="selectP3(${oi})"><span class="opt-letter">${letters[li]}</span><span>${opt.t}</span></div>`;
+  });
+  html += `</div></div>`;
+  document.getElementById("p3-question-area").innerHTML = html;
+  document.getElementById("p3-next-btn").textContent = idx === 17 ? "Ver Resultados →" : "Siguiente →";
+  updateGlobalProgress();
+}
+
+function selectP3(optIdx) {
+  state.p3Answers[state.p3Idx] = optIdx;
+  saveState();
+  renderP3();
+}
+
+function p3Prev() {
+  if (state.p3Idx > 0) { state.p3Idx--; saveState(); renderP3(); }
+}
+
+function p3Next() {
+  const ans = state.p3Answers[state.p3Idx];
+  if (ans === null) { showToast("Por favor elige una opción antes de continuar."); return; }
+  if (state.p3Idx < 17) { state.p3Idx++; saveState(); renderP3(); }
+  else {
+    if (!state.p3Answers.every(v=>v!==null)) { showToast("Hay preguntas sin responder."); return; }
+    state.phase = "report"; saveState(); showScreen("report-screen"); renderReport(); updateGlobalProgress();
+  }
+}
+
+// ============================================================
+// CALCULATIONS
+// ============================================================
+function calcP1() {
+  const quads = ["CD","CI","LI","LD"];
+  const fCount = {CD:0,CI:0,LI:0,LD:0};
+  const dCount = {CD:0,CI:0,LI:0,LD:0};
+  state.p1A.forEach((ans, i) => { if(ans!==null) fCount[P1_STRENGTHS[i].opts[ans].q]++; });
+  state.p1B.forEach((ans, i) => { if(ans!==null) dCount[P1_WEAKNESSES[i].opts[ans].q]++; });
+  const fPct = {}; const dPct = {};
+  quads.forEach(q => { fPct[q] = Math.round((fCount[q]/20)*100); dPct[q] = Math.round((dCount[q]/20)*100); });
+  const domF = quads.reduce((a,b) => fCount[a]>=fCount[b]?a:b);
+  const domD = quads.reduce((a,b) => dCount[a]>=dCount[b]?a:b);
+  return { fCount, dCount, fPct, dPct, domF, domD };
+}
+
+function calcP2() {
+  const totals = {};
+  const maxes = {};
+  Object.entries(CAREERS).forEach(([c, items]) => { totals[c] = 0; maxes[c] = items.length * 5; });
+  P2_ITEMS.forEach((_, i) => {
+    const career = P2_CAREER_MAP[i];
+    totals[career] = (totals[career]||0) + (state.p2Answers[i]||0);
+  });
+  const pcts = {};
+  Object.keys(totals).forEach(c => pcts[c] = Math.round((totals[c]/maxes[c])*100));
+  const sorted = Object.entries(pcts).sort((a,b) => b[1]-a[1]);
+  return { pcts, sorted, top3: sorted.slice(0,3), top10: sorted.slice(0,10) };
+}
+
+function calcP3() {
+  const cnt = {V:0, A:0, K:0};
+  state.p3Answers.forEach((ans, i) => { if(ans!==null) cnt[P3_QUESTIONS[i].opts[ans].s]++; });
+  const pcts = {};
+  ["V","A","K"].forEach(s => pcts[s] = Math.round((cnt[s]/18)*100));
+  const dom = ["V","A","K"].reduce((a,b) => cnt[a]>=cnt[b]?a:b);
+  return { cnt, pcts, dom };
+}
+
+// ============================================================
+// REPORT
+// ============================================================
+const QUAD_INFO = {
+  CD: { name:"Cortical Derecho", color:"cd", desc:"Perfil visionario e innovador. Piensas de forma global, percibes tendencias, amas los retos y la creatividad. Te mueves con intuición y entusiasmo hacia el futuro.", dev:"Desarrolla la atención al detalle, la gestión del tiempo y la capacidad de concretar proyectos." },
+  CI: { name:"Cortical Izquierdo", color:"ci", desc:"Perfil analítico y riguroso. Tu fortaleza está en el pensamiento lógico, el análisis de datos y la solución sistemática de problemas. Valoras la objetividad y la precisión.", dev:"Trabaja en desarrollar tu inteligencia emocional, la empatía y la flexibilidad ante el cambio." },
+  LI: { name:"Límbico Izquierdo", color:"li", desc:"Perfil organizado y metódico. Eres altamente confiable, disciplinado y orientado a cumplir. Prefieres la estabilidad y los procesos probados.", dev:"Practica la apertura a nuevas ideas, la improvisación y la tolerancia a la ambigüedad." },
+  LD: { name:"Límbico Derecho", color:"ld", desc:"Perfil empático y sociable. Tienes habilidades excepcionales para conectar con las personas, trabajar en equipo y comunicarte de forma cálida y efectiva.", dev:"Fortalece tu asertividad, la toma de decisiones independiente y la tolerancia al conflicto." }
+};
+
+const VAK_INFO = {
+  V: { name:"Visual", strats:["Usa mapas conceptuales, diagramas y esquemas para organizar la información.","Subraya y usa colores en tus notas para resaltar ideas clave.","Crea líneas de tiempo e infografías al estudiar historia o ciencias.","Busca videos explicativos y presentaciones visuales de los temas."] },
+  A: { name:"Auditivo", strats:["Graba tus propios resúmenes y escúchalos mientras haces otras actividades.","Participa en grupos de estudio donde puedas discutir los temas en voz alta.","Usa canciones, mnemotécnicas o ritmos para memorizar conceptos.","Escucha podcasts o conferencias de los temas que estás aprendiendo."] },
+  K: { name:"Kinestésico", strats:["Aprende haciendo: resuelve ejercicios, construye modelos o realiza experimentos.","Toma apuntes escritos a mano y alterna el estudio con el movimiento físico.","Usa tarjetas didácticas (flashcards) y técnicas activas de repaso.","Busca prácticas, laboratorios y actividades experimentales en tu carrera."] }
+};
+
+function renderReport() {
+  const p1 = calcP1();
+  const p2 = calcP2();
+  const p3 = calcP3();
+
+  document.getElementById("rh-name-date").textContent = `${state.name} · ${state.date}`;
+
+  // PART 1
+  const quads = ["CD","CI","LI","LD"];
+  let fGrid = "", dGrid = "";
+  quads.forEach(q => {
+    const info = QUAD_INFO[q];
+    const fp = p1.fPct[q], dp = p1.dPct[q];
+    fGrid += `<div class="quad-card ${info.color}"><div class="quad-name">${info.name}</div><div class="quad-pct">${fp}%</div><div class="quad-bar-wrap"><div class="quad-bar" style="width:${fp}%;background:currentColor;opacity:0.6"></div></div></div>`;
+    dGrid += `<div class="quad-card ${info.color}"><div class="quad-name">${info.name}</div><div class="quad-pct">${dp}%</div><div class="quad-bar-wrap"><div class="quad-bar" style="width:${dp}%;background:currentColor;opacity:0.6"></div></div></div>`;
+  });
+  document.getElementById("quad-grid-f").innerHTML = fGrid;
+  document.getElementById("quad-grid-d").innerHTML = dGrid;
+  const domF = QUAD_INFO[p1.domF], domD = QUAD_INFO[p1.domD];
+  document.getElementById("quad-dominant-desc").innerHTML = `<strong>Fortaleza dominante: ${domF.name}</strong><br>${domF.desc}<br><br><strong>Debilidad dominante: ${domD.name}</strong><br><span style="color:var(--muted)">${domD.dev}</span>`;
+
+  // PART 2
+  let top3Html = "";
+  p2.top3.forEach(([c,p], i) => {
+    top3Html += `<div class="top3-card"><div class="top3-rank">#${i+1}</div><div class="top3-name">${c}</div><div class="top3-pct">${p}%</div></div>`;
+  });
+  document.getElementById("top3-cards").innerHTML = top3Html;
+
+  const colors2 = ["#059669","#0891b2","#7c3aed","#dc2626","#d97706","#2563eb","#be185d","#16a34a","#ea580c","#0d9488"];
+  let barHtml = "";
+  p2.top10.forEach(([c,p], i) => {
+    barHtml += `<div class="bc-row"><div class="bc-label">${c}</div><div class="bc-bar-wrap"><div class="bc-bar" style="width:${p}%;background:${colors2[i]};"><span class="bc-val">${p}%</span></div></div></div>`;
+  });
+  document.getElementById("career-bar-chart").innerHTML = barHtml;
+
+  // PART 3
+  const vakStyles = [{s:"V",cls:"v"},{s:"A",cls:"a"},{s:"K",cls:"k"}];
+  let vakHtml = "";
+  vakStyles.forEach(({s,cls}) => {
+    const info = VAK_INFO[s];
+    vakHtml += `<div class="vak-card ${cls}"><div class="vak-name">${info.name}</div><div class="vak-pct">${p3.pcts[s]}%</div></div>`;
+  });
+  document.getElementById("vak-grid").innerHTML = vakHtml;
+  const domVAK = VAK_INFO[p3.dom];
+  let stratHtml = `<strong>Estrategias recomendadas para tu estilo ${domVAK.name}:</strong><div class="strat-list">`;
+  domVAK.strats.forEach(s => { stratHtml += `<div class="strat-item"><div class="strat-dot"></div><span>${s}</span></div>`; });
+  stratHtml += `</div>`;
+  document.getElementById("vak-strategies").innerHTML = stratHtml;
+
+  // TRIANGULATION
+  document.getElementById("triang-text").innerHTML = generateTriangulation(p1, p2, p3);
+
+  // SHARE LINK
+  const encoded = btoa(JSON.stringify(state));
+  const url = `${window.location.origin}${window.location.pathname}?r=${encoded}`;
+  document.getElementById("url-display").textContent = url;
+}
+
+function generateTriangulation(p1, p2, p3) {
+  const domF = QUAD_INFO[p1.domF];
+  const domVAK = VAK_INFO[p3.dom];
+  const top1 = p2.top3[0]?.[0] || "la carrera de mayor afinidad";
+  const top2 = p2.top3[1]?.[0] || "tu segunda opción";
+
+  const quadTexts = {
+    CD: "Tu perfil de temperamento Cortical Derecho revela una mente creativa, intuitiva y orientada a la innovación. Tienes una visión sistémica y una capacidad natural para generar ideas disruptivas.",
+    CI: "Tu perfil de temperamento Cortical Izquierdo indica un pensamiento analítico, lógico y científico muy desarrollado. Eres riguroso en tus análisis y orientado a la evidencia.",
+    LI: "Tu perfil de temperamento Límbico Izquierdo muestra un carácter organizado, metódico y altamente confiable. Valoras la estructura, el orden y el cumplimiento de los objetivos.",
+    LD: "Tu perfil de temperamento Límbico Derecho refleja una inteligencia emocional y social excepcional. Eres empático, comunicativo y hábil para construir relaciones genuinas."
+  };
+
+  const vakTexts = {
+    V: `Tu estilo de aprendizaje predominantemente Visual indica que asimilas mejor la información a través de diagramas, esquemas, mapas conceptuales e imágenes. En ${top1}, te beneficiarás de metodologías que incluyan representaciones gráficas de los conceptos.`,
+    A: `Tu estilo de aprendizaje predominantemente Auditivo revela que procesas mejor la información a través de la escucha activa, el debate y la explicación verbal. En ${top1}, participar en seminarios, grupos de discusión y podcasts académicos potenciará tu aprendizaje.`,
+    K: `Tu estilo de aprendizaje predominantemente Kinestésico indica que aprendes mejor a través de la práctica directa y la experiencia. En ${top1}, los laboratorios, las pasantías, los proyectos aplicados y las simulaciones serán tus herramientas más poderosas.`
+  };
+
+  const careerFit = {
+    CD: `Esto es coherente con tu alta afinidad por ${top1} y ${top2}, campos que requieren pensamiento divergente, visión estratégica y capacidad para innovar en contextos inciertos.`,
+    CI: `Esto se alinea perfectamente con tu alta afinidad por ${top1} y ${top2}, disciplinas que demandan rigor analítico, capacidad de abstracción y solución sistemática de problemas complejos.`,
+    LI: `Esto es consistente con tu alta afinidad por ${top1} y ${top2}, áreas que valoran la organización, la disciplina operativa y la gestión eficiente de procesos y recursos.`,
+    LD: `Esto se corresponde con tu alta afinidad por ${top1} y ${top2}, áreas donde la capacidad de conectar con las personas, comunicar efectivamente y construir comunidad son esenciales.`
+  };
+
+  return `${quadTexts[p1.domF]} ${careerFit[p1.domF]}<br><br>${vakTexts[p3.dom]}<br><br>En síntesis, tu perfil combina el temperamento de un <strong>${domF.name}</strong>, el estilo de aprendizaje <strong>${domVAK.name}</strong> y una vocación hacia <strong>${top1}</strong>. Este cruce sugiere que tu desarrollo académico y profesional será más pleno cuando puedas integrar tu naturaleza ${p1.domF === "CD" || p1.domF === "LD" ? "relacional y creativa" : "analítica y estructurada"} con entornos de formación que respeten tu forma de procesar el conocimiento.`;
+}
+
+// ============================================================
+// GLOBAL PROGRESS
+// ============================================================
+function updateGlobalProgress() {
+  let answered = 0;
+  state.p1A.forEach(v => { if(v!==null) answered++; });
+  state.p1B.forEach(v => { if(v!==null) answered++; });
+  Object.keys(state.p2Answers).forEach(k => { if(state.p2Answers[k]) answered++; });
+  state.p3Answers.forEach(v => { if(v!==null) answered++; });
+  const pct = Math.min(100, Math.round((answered/TOTAL_ITEMS)*100));
+  document.getElementById("gp-bar").style.width = pct+"%";
+  document.getElementById("gp-pct").textContent = pct+"%";
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function copyLink() {
+  const encoded = btoa(JSON.stringify(state));
+  const url = `${window.location.origin}${window.location.pathname}?r=${encoded}`;
+  navigator.clipboard.writeText(url).then(() => showToast("¡Enlace copiado al portapapeles!")).catch(() => {
+    document.getElementById("url-display").select();
+    showToast("Copia el enlace manualmente.");
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+function confirmReset() { document.getElementById("modal").classList.add("open"); }
+function closeModal() { document.getElementById("modal").classList.remove("open"); }
+function doReset() {
+  closeModal();
+  localStorage.removeItem("tov_state");
+  state = { name:"", date:new Date().toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"}), p1A:new Array(20).fill(null), p1B:new Array(20).fill(null), p1Idx:0, p2Answers:{}, p2Idx:0, p3Answers:new Array(18).fill(null), p3Idx:0, phase:"welcome" };
+  p1Shuffled = []; p3Shuffled = [];
+  document.getElementById("global-progress").style.display = "none";
+  document.getElementById("username-input").value = "";
+  showScreen("welcome-screen");
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+</script>
+</body>
+</html>
