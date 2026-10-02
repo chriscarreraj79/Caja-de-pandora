@@ -40,6 +40,13 @@
   .parts-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; }
   .part-badge { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 0.35rem 0.9rem; font-size: 0.8rem; }
   input[type="text"] { width: 100%; padding: 0.85rem 1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); color: white; font-size: 1rem; font-family: inherit; outline: none; margin-bottom: 1.5rem; }
+  .code-lookup { margin-top: 1.5rem; font-size: 0.85rem; text-align: left; }
+  .code-lookup summary { cursor: pointer; opacity: 0.85; text-align: center; list-style: none; }
+  .code-lookup summary::-webkit-details-marker { display: none; }
+  .code-lookup summary:hover { opacity: 1; text-decoration: underline; }
+  .code-lookup textarea { width: 100%; margin: 0.75rem 0; min-height: 80px; padding: 0.7rem 0.9rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); color: white; font-family: monospace; font-size: 0.75rem; resize: vertical; outline: none; }
+  .code-lookup textarea::placeholder { color: rgba(255,255,255,0.5); }
+  .share-label { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--pr); margin-bottom: 0.4rem; text-align: left; }
   .mode-select { display: flex; gap: 0.6rem; margin-bottom: 1.5rem; text-align: left; flex-wrap: wrap; }
   .mode-option { flex: 1; min-width: 200px; display: flex; gap: 0.6rem; align-items: flex-start; cursor: pointer; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 0.75rem 0.9rem; font-size: 0.85rem; line-height: 1.4; }
   .mode-option:has(input:checked) { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.7); }
@@ -56,7 +63,7 @@
   .btn-success:hover { background: var(--p2d); }
 
   /* GLOBAL PROGRESS */
-  .global-progress { position: sticky; top: 0; z-index: 100; background: white; border-bottom: 1px solid var(--border); padding: 0.6rem 1.5rem; display: flex; align-items: center; gap: 1rem; }
+  .global-progress { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 100; background: white; border-bottom: 1px solid var(--border); padding: 0.6rem 1.5rem; display: flex; align-items: center; gap: 1rem; }
   .gp-label { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
   .gp-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .gp-bar { height: 100%; background: linear-gradient(90deg, var(--p1), var(--p2)); border-radius: 3px; transition: width 0.4s ease; }
@@ -228,6 +235,11 @@
     <input type="text" id="username-input" placeholder="Escribe tu nombre completo..." maxlength="60">
     <br>
     <button class="btn btn-primary" onclick="startTest()">Comenzar test &rarr;</button>
+    <details class="code-lookup">
+      <summary>¿Recibiste un código de resultados? Ver informe</summary>
+      <textarea id="code-input" placeholder="Pega aquí el código que te envió tu consultante..."></textarea>
+      <button class="btn btn-outline" onclick="openFromCode()">Ver informe &rarr;</button>
+    </details>
   </div>
 </div>
 
@@ -360,11 +372,16 @@
     <div class="report-section">
       <h3>5. Compartir resultados</h3>
       <div class="share-box">
-        <p>Comparte este enlace con tu orientador vocacional para que vea tus resultados completos.</p>
-        <div class="url-display" id="url-display">Generando enlace...</div>
+        <p>Envía el enlace o el código a tu psicólogo u orientador vocacional (por WhatsApp o correo) para que vea tus resultados completos.</p>
+        <div id="share-link-block">
+          <div class="share-label">Enlace</div>
+          <div class="url-display" id="url-display">Generando enlace...</div>
+        </div>
+        <div class="share-label">Código de resultados</div>
+        <div class="url-display" id="code-display">Generando código...</div>
         <div class="report-actions">
-          <button class="btn btn-primary" onclick="copyLink()">Copiar enlace</button>
-          <button class="btn" style="background:var(--pr);color:white;" onclick="window.print()">Imprimir / PDF</button>
+          <button class="btn" id="copy-link-btn" style="background:var(--pr);color:white;" onclick="copyLink()">Copiar enlace</button>
+          <button class="btn" style="background:var(--pr);color:white;" onclick="copyCode()">Copiar código</button>
           <button class="btn btn-outline" style="color:var(--text);border-color:var(--border);" onclick="confirmReset()">Nuevo test</button>
         </div>
       </div>
@@ -1473,9 +1490,10 @@ function loadState() {
 window.addEventListener("DOMContentLoaded", () => {
   updateWelcomeCounts();
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get("r")) {
+  const sharedCode = window.location.hash.slice(1) || urlParams.get("r");
+  if (sharedCode) {
     try {
-      state = decodeResults(urlParams.get("r"));
+      state = decodeResults(sharedCode);
       showScreen("report-screen");
       renderReport();
       return;
@@ -1836,8 +1854,12 @@ function renderReport() {
   // TRIANGULATION
   document.getElementById("triang-text").innerHTML = generateTriangulation(p1, p2, p3);
 
-  // SHARE LINK
-  document.getElementById("url-display").textContent = buildShareUrl();
+  // SHARE LINK + CODE
+  const url = buildShareUrl();
+  document.getElementById("share-link-block").hidden = !url;
+  document.getElementById("copy-link-btn").hidden = !url;
+  if (url) document.getElementById("url-display").textContent = url;
+  document.getElementById("code-display").textContent = encodeResults();
 }
 
 function generateTriangulation(p1, p2, p3) {
@@ -1936,22 +1958,55 @@ function decodeResults(param) {
     p3Answers: parse(data.e), p3Idx: 17, phase: "report"
   };
 }
+// Dirección pública de la página publicada. Vacía = se usa la URL actual si la página
+// no está dentro de un marco; si lo está, solo se ofrece el código.
+const SHARE_BASE = "";
+function shareBase() {
+  if (SHARE_BASE) return SHARE_BASE;
+  let framed = true;
+  try { framed = window.top !== window.self; } catch(e) {}
+  if (framed || !/^https?:$/.test(window.location.protocol)) return "";
+  return window.location.origin + window.location.pathname;
+}
+// El código va en el #hash (base64url solo usa letras, dígitos, - y _)
 function buildShareUrl() {
-  return `${window.location.origin}${window.location.pathname}?r=${encodeResults()}`;
+  const base = shareBase();
+  return base ? `${base}#${encodeResults()}` : "";
 }
 
-function copyLink() {
-  const url = buildShareUrl();
-  navigator.clipboard.writeText(url).then(() => showToast("¡Enlace copiado al portapapeles!")).catch(() => {
-    // url-display es un <div>: se selecciona su texto con un Range
-    const el = document.getElementById("url-display");
+function copyText(text, displayId, okMsg) {
+  const fallback = () => {
+    // los display son <div>: se selecciona su texto con un Range
+    const el = document.getElementById(displayId);
     const range = document.createRange();
     range.selectNodeContents(el);
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
-    showToast("Copia el enlace manualmente.");
-  });
+    showToast("Selecciona y copia el texto manualmente.");
+  };
+  try {
+    navigator.clipboard.writeText(text).then(() => showToast(okMsg)).catch(fallback);
+  } catch(e) { fallback(); }
+}
+function copyLink() { copyText(buildShareUrl(), "url-display", "¡Enlace copiado al portapapeles!"); }
+function copyCode() { copyText(encodeResults(), "code-display", "¡Código copiado al portapapeles!"); }
+
+function openFromCode() {
+  const raw = document.getElementById("code-input").value.trim();
+  // Acepta el código solo o un enlace completo (con #código o ?r=código)
+  let code = raw;
+  if (raw.includes("#")) code = raw.slice(raw.lastIndexOf("#") + 1);
+  else if (raw.includes("r=")) code = raw.slice(raw.indexOf("r=") + 2);
+  try {
+    state = decodeResults(code);
+    if (!Array.isArray(state.p1A) || !Array.isArray(state.p3Answers)) throw new Error("bad");
+  } catch(e) {
+    showToast("El código no es válido. Revisa que esté completo.");
+    return;
+  }
+  showScreen("report-screen");
+  renderReport();
 }
 
 function showToast(msg) {
@@ -1965,13 +2020,13 @@ function confirmReset() { document.getElementById("modal").classList.add("open")
 function closeModal() { document.getElementById("modal").classList.remove("open"); }
 function doReset() {
   closeModal();
-  localStorage.removeItem("tov_state");
+  try { localStorage.removeItem("tov_state"); } catch(e){}
   state = { name:"", date:new Date().toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"}), p1A:new Array(20).fill(null), p1B:new Array(20).fill(null), p1Idx:0, p2Answers:{}, p2Idx:0, p3Answers:new Array(18).fill(null), p3Idx:0, phase:"welcome", mode:"completa" };
   p1Shuffled = []; p3Shuffled = [];
   document.getElementById("global-progress").style.display = "none";
   document.getElementById("username-input").value = "";
   showScreen("welcome-screen");
-  window.history.replaceState({}, document.title, window.location.pathname);
+  try { window.history.replaceState({}, document.title, window.location.pathname); } catch(e){}
 }
 </script>
 </body>
