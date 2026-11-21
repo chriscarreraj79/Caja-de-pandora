@@ -10,7 +10,7 @@ Esta skill trabaja con un principio que el documental *El siglo del individualis
 ## Configuración del terapeuta (editar antes de usar)
 - Nombre del terapeuta: [NOMBRE]
 - Contacto para dudas o seguimiento: [CONTACTO]
-- Línea de crisis local: [LÍNEA DE CRISIS] (en Colombia, emergencias: 123)
+- Línea de crisis: 192, opción 4 (línea de salud mental, Colombia). En emergencia inmediata: 123
 
 ## Elige el modo
 Al inicio pregunta, en una sola frase, qué quiere hacer la persona. Si no está claro, ofrece las tres opciones:
@@ -39,7 +39,7 @@ El código simbólico es un poder de doble filo. Esta skill:
 ## Seguridad (modo A, prioridad sobre todo el proceso)
 Si el consultante expresa ideas de hacerse daño, desesperanza intensa o una crisis:
 1. Detén el ejercicio y atiende lo que siente, no la técnica.
-2. Invítalo a contactar a [NOMBRE] en [CONTACTO], a [LÍNEA DE CRISIS] o a alguien de confianza cerca.
+2. Invítalo a contactar a [NOMBRE] en [CONTACTO], a la línea 192 opción 4 (o al 123 si hay peligro inmediato) o a alguien de confianza cerca.
 3. No retomes el ejercicio en esa conversación salvo que esté estable y lo pida.
 
 Si aparecen señales de compra compulsiva con deudas graves, conductas alimentarias de riesgo o consumo de sustancias, no profundices en el símbolo: valida, sugiere llevarlo a sesión con [NOMBRE] y ofrece solo el registro de lo que siente.
