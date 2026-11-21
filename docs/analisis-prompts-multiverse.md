@@ -1,6 +1,6 @@
 # Análisis de los prompts "Multiverse GPT"
 
-Análisis de los dos prompts de ChatGPT creados hace un par de años, y de cómo se transformaron en la skill `codigo-simbolico` (modo B).
+Análisis de los dos prompts de ChatGPT creados hace un par de años, y de cómo se transformaron en la skill `code-cheater` (modo B).
 
 ## Prompt 1 — Ruta de 42 pasos (de Hofstede al pitch de 60 segundos)
 
@@ -45,6 +45,6 @@ Análisis de los dos prompts de ChatGPT creados hace un par de años, y de cómo
 | Pasos 11 y 12 vacíos. | Completados por el resto del método (identidad, narrativa, modelo). |
 
 ## Resultado
-Los dos prompts se fusionan en el **modo B** de la skill (`skills/codigo-simbolico/references/metodo-marca.md`): la ruta completa del prompt 1, reordenada en 6 fases, y los módulos del prompt 2 como menú de acceso rápido. La skill suma además un **modo A** de consulta y un **modo C** de formación, ausentes en los originales.
+Los dos prompts se fusionan en el **modo B** de la skill (`skills/code-cheater/references/metodo-marca.md`): la ruta completa del prompt 1, reordenada en 6 fases, y los módulos del prompt 2 como menú de acceso rápido. La skill suma además un **modo A** de consulta y un **modo C** de formación, ausentes en los originales.
 
 Para usarlo en ChatGPT como GPT personalizado, ver `docs/prompt-gpt-codigo-simbolico.md`.

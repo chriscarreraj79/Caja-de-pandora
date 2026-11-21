@@ -1,9 +1,9 @@
 ---
-name: "codigo-simbolico"
+name: "code-cheater"
 description: "Úsala cuando se quiera descifrar o trabajar el código simbólico: en consulta (qué promete lo que una persona consume, del fetiche al símbolo vivo, actos simbólicos) o en estrategia de marca consciente (códigos culturales, arquetipo, arcanos del Tarot, metáforas y narrativa)."
 ---
 
-# Código Simbólico — del fetiche al símbolo vivo
+# Code Cheater — del fetiche al símbolo vivo
 
 Esta skill trabaja con un principio que el documental *El siglo del individualismo* (Adam Curtis, BBC 2002) muestra desde su lado oscuro: **el inconsciente responde a símbolos, no a argumentos.** Bernays y Dichter usaron ese lenguaje para fabricar deseo; aquí se usa con conciencia y consentimiento, para que la persona recupere lo que proyecta afuera o para que una marca comunique una verdad en lugar de explotar un miedo.
 
